@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' data:; media-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'"
+    />
+    <title>lolPing overlay</title>
+    <link rel="stylesheet" href="./overlay.css" />
+  </head>
+  <body>
+    <div id="pings"></div>
+    <svg id="wheel" viewBox="-300 -300 600 600"></svg>
+    <svg id="emoteWheel" viewBox="-300 -300 600 600"></svg>
+    <div id="toasts"></div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

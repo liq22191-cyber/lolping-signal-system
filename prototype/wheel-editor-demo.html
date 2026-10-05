@@ -1,0 +1,233 @@
+<!doctype html>
+<!-- THROWAWAY PROTOTYPE: the "Wheel" settings card (drag pings onto slots). Not app code. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wheel Editor Demo</title>
+<style>
+  :root {
+    --bg: #202020; --mica: rgba(32,32,32,.82); --card: rgba(255,255,255,.05); --card-hover: rgba(255,255,255,.08);
+    --stroke: rgba(255,255,255,.07); --text: #fff; --text2: rgba(255,255,255,.79); --text3: rgba(255,255,255,.55);
+    --accent: #60cdff; --accent-text: #000; --ctrl: rgba(255,255,255,.06); --ctrl-hover: rgba(255,255,255,.09);
+    --ctrl-stroke: rgba(255,255,255,.09); --wall1: #2d3d63; --wall2: #5a2f57;
+    --wedge: rgba(10,14,22,.78); --wedge-hot: rgba(60,120,170,.55); --wedge-stroke: rgba(200,170,110,.35);
+  }
+  @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) {
+    --bg: #f3f3f3; --mica: rgba(243,243,243,.85); --card: rgba(255,255,255,.7); --card-hover: rgba(249,249,249,.9);
+    --stroke: rgba(0,0,0,.06); --text: #1a1a1a; --text2: rgba(0,0,0,.72); --text3: rgba(0,0,0,.5);
+    --accent: #005fb8; --accent-text: #fff; --ctrl: rgba(255,255,255,.7); --ctrl-hover: rgba(249,249,249,.5);
+    --ctrl-stroke: rgba(0,0,0,.1); --wall1: #9db4e8; --wall2: #e3b6d8; } }
+  :root[data-theme="light"] {
+    --bg: #f3f3f3; --mica: rgba(243,243,243,.85); --card: rgba(255,255,255,.7); --card-hover: rgba(249,249,249,.9);
+    --stroke: rgba(0,0,0,.06); --text: #1a1a1a; --text2: rgba(0,0,0,.72); --text3: rgba(0,0,0,.5);
+    --accent: #005fb8; --accent-text: #fff; --ctrl: rgba(255,255,255,.7); --ctrl-hover: rgba(249,249,249,.5);
+    --ctrl-stroke: rgba(0,0,0,.1); --wall1: #9db4e8; --wall2: #e3b6d8; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body { font: 14px/20px "Segoe UI Variable Text", "Segoe UI", sans-serif; color: var(--text); display: grid; place-items: center; padding: 16px;
+    background: radial-gradient(900px 600px at 15% 20%, var(--wall1), transparent 70%), radial-gradient(800px 600px at 90% 90%, var(--wall2), transparent 70%), var(--bg); }
+  .win { width: min(760px, 100%); border-radius: 8px; padding: 8px 28px 28px; background: var(--mica); backdrop-filter: blur(60px) saturate(1.4);
+    border: 1px solid var(--stroke); box-shadow: 0 32px 64px rgba(0,0,0,.37), 0 2px 21px rgba(0,0,0,.3); }
+  h2 { font: 600 14px "Segoe UI Variable Text", "Segoe UI"; margin: 22px 0 8px; }
+  .card { border-radius: 4px; background: var(--card); border: 1px solid var(--stroke); padding: 16px 20px 18px; }
+  .head { display: flex; align-items: flex-start; gap: 16px; }
+  .head .lbl { flex: 1; } .head small { display: block; color: var(--text3); font-size: 12px; line-height: 16px; }
+  button.btn { height: 32px; padding: 0 14px; border-radius: 4px; font: inherit; color: var(--text); background: var(--ctrl); border: 1px solid var(--ctrl-stroke); border-bottom-color: rgba(127,127,127,.35); }
+  button.btn:hover { background: var(--ctrl-hover); }
+
+  /* wheel */
+  .editor { display: grid; grid-template-columns: 300px 1fr; gap: 24px; align-items: center; margin-top: 14px; }
+  .wheel { position: relative; width: 300px; height: 300px; }
+  .wheel svg { position: absolute; inset: 0; }
+  .wedge { fill: var(--wedge); stroke: var(--wedge-stroke); stroke-width: 1; transition: fill .12s; }
+  .wedge.hot { fill: var(--wedge-hot); }
+  .slot { position: absolute; width: 56px; height: 56px; margin: -28px 0 0 -28px; display: grid; place-items: center; border-radius: 50%; cursor: grab; }
+  .slot img { width: 46px; height: 46px; pointer-events: none; transition: transform .12s; filter: drop-shadow(0 2px 3px rgba(0,0,0,.5)); }
+  .slot:hover img, .slot.hot img { transform: scale(1.15); }
+  .slot.picked { outline: 2px dashed var(--accent); outline-offset: 2px; }
+  .slot:focus-visible { outline: 2px solid var(--accent); }
+  .center { position: absolute; left: 50%; top: 50%; width: 92px; height: 92px; margin: -46px 0 0 -46px; border-radius: 50%;
+    display: grid; place-items: center; align-content: center; gap: 0; background: radial-gradient(circle, rgba(20,26,38,.95), rgba(10,14,22,.9));
+    border: 1px solid var(--wedge-stroke); cursor: grab; transition: box-shadow .12s; }
+  .center img { width: 40px; height: 40px; pointer-events: none; }
+  .center span { font: 600 10px "Segoe UI"; letter-spacing: .08em; color: #1fa9e0; pointer-events: none; }
+  .center.hot { box-shadow: 0 0 0 3px var(--accent); }
+  .center.picked { outline: 2px dashed var(--accent); outline-offset: 3px; }
+  .center.off { opacity: .45; }
+
+  /* pool */
+  .pool h3 { margin: 0 0 4px; font: 600 12px "Segoe UI"; color: var(--text2); }
+  .pool p { margin: 0 0 10px; color: var(--text3); font-size: 12px; line-height: 16px; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 6px; }
+  .tile { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 2px 6px; border-radius: 6px;
+    font: 11px/14px "Segoe UI"; color: var(--text2); background: var(--ctrl); border: 1px solid var(--ctrl-stroke); cursor: grab; user-select: none; text-align: center; }
+  .tile:hover { background: var(--ctrl-hover); } .tile:active { transform: scale(.97); }
+  .tile img { width: 34px; height: 34px; pointer-events: none; }
+  .tile.used::after { content: attr(data-slot); position: absolute; top: 3px; right: 4px; font-size: 10px; color: var(--text3); }
+  .tile.picked { outline: 2px solid var(--accent); outline-offset: -1px; }
+  .tile .new { position: absolute; top: 3px; left: 4px; font: 600 9px "Segoe UI"; color: var(--accent); }
+  .dragging { opacity: .4; }
+  .foot { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
+  .foot .hint { flex: 1; color: var(--text3); font-size: 12px; }
+  .row { display: flex; align-items: center; gap: 16px; min-height: 60px; padding: 12px 20px; border-radius: 4px; margin-top: 3px; background: var(--card); border: 1px solid var(--stroke); }
+  .row .lbl { flex: 1; } .row small { display: block; color: var(--text3); font-size: 12px; }
+  .toggle input { appearance: none; width: 40px; height: 20px; border-radius: 10px; border: 1px solid var(--text3); position: relative; margin: 0; }
+  .toggle input::after { content: ""; position: absolute; top: 3px; left: 3px; width: 12px; height: 12px; border-radius: 50%; background: var(--text2); transition: left .15s; }
+  .toggle input:checked { background: var(--accent); border-color: var(--accent); }
+  .toggle input:checked::after { left: 23px; background: var(--accent-text); }
+  .themebtn { position: fixed; left: 16px; bottom: 16px; }
+  @media (max-width: 680px) { .editor { grid-template-columns: 1fr; justify-items: center; } .win { padding: 8px 16px 20px; } }
+</style>
+</head>
+<body>
+<div class="win">
+  <h2>Wheel</h2>
+  <div class="card">
+    <div class="head">
+      <div class="lbl">Customize the wheel
+        <small>Drag a ping onto a slice to put it there. Drop it on the centre to make it the Alt + click ping.</small>
+      </div>
+      <button class="btn" id="reset">Reset to default</button>
+    </div>
+    <div class="editor">
+      <div class="wheel" id="wheel"><svg viewBox="0 0 300 300" id="svg"></svg></div>
+      <div class="pool">
+        <h3>All pings</h3>
+        <p>Click to preview. Drag onto the wheel to assign. Or click a ping, then click a slot.</p>
+        <div class="tiles" id="tiles"></div>
+      </div>
+    </div>
+    <div class="foot"><span class="hint" id="hint">&nbsp;</span></div>
+  </div>
+  <div class="row">
+    <div class="lbl">Alt + click places a ping<small>The ping in the centre of the wheel. When off, Alt + click passes straight through.</small></div>
+    <label class="toggle"><input type="checkbox" id="click"></label>
+  </div>
+</div>
+<button class="btn themebtn" id="theme">Toggle theme</button>
+<script>
+const T = '../assets/textures/', SND = '../assets/sounds/';
+const PINGS = {
+  danger: { name: 'Danger', icon: 'pingwheel_retreatrender', sound: 'SRP_12' },
+  push: { name: 'Push', icon: 'push', sound: 'SRP_9' },
+  omw: { name: 'On My Way', icon: 'omw', sound: 'OnMyWay' },
+  allin: { name: 'All In', icon: 'all_in', sound: 'SRP_4' },
+  assist: { name: 'Assist Me', icon: 'assist_me', sound: 'ComeHere' },
+  needvision: { name: 'Need Vision', icon: 'need_vision', sound: 'SRP_7' },
+  missing: { name: 'Enemy Missing', icon: 'enemy_missing', sound: 'MIA' },
+  enemyvision: { name: 'Enemy Vision', icon: 'enemy_vision', sound: 'AreaIsWarded' },
+  generic: { name: 'Generic', icon: 'generic_ping', sound: 'Base' },
+  bait: { name: 'Bait', icon: 'pingwheel_baitrender', sound: 'SRP_11', isNew: true },
+  visioncleared: { name: 'Vision Cleared', icon: 'vision_cleared', sound: 'SRP_6', isNew: true },
+};
+const DEFAULT_WHEEL = ['danger', 'push', 'omw', 'allin', 'assist', 'needvision', 'missing', 'enemyvision'];
+const DIRS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+let wheel = [...DEFAULT_WHEEL], clickId = 'generic', picked = null; // picked: {from:'pool'|'slot'|'center', id, i}
+
+const C = 150, R_IN = 52, R_OUT = 146, R_ICON = 100, GAP = 0.035;
+const svg = document.getElementById('svg'), wheelEl = document.getElementById('wheel');
+const pt = (r, a) => `${C + r * Math.sin(a)},${C - r * Math.cos(a)}`;
+const slots = DEFAULT_WHEEL.map((_, i) => {
+  const a0 = (i - 0.5) * Math.PI / 4 + GAP, a1 = (i + 0.5) * Math.PI / 4 - GAP;
+  const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  p.setAttribute('class', 'wedge');
+  p.setAttribute('d', `M${pt(R_IN, a0)} A${R_IN},${R_IN} 0 0 1 ${pt(R_IN, a1)} L${pt(R_OUT, a1)} A${R_OUT},${R_OUT} 0 0 0 ${pt(R_OUT, a0)}Z`);
+  svg.append(p);
+  const s = document.createElement('div');
+  s.className = 'slot'; s.tabIndex = 0; s.draggable = true;
+  const a = i * Math.PI / 4;
+  s.style.left = `${C + R_ICON * Math.sin(a)}px`; s.style.top = `${C - R_ICON * Math.cos(a)}px`;
+  s.append(document.createElement('img'));
+  wheelEl.append(s);
+  return { el: s, wedge: p };
+});
+const center = document.createElement('div');
+center.className = 'center'; center.tabIndex = 0; center.draggable = true;
+center.innerHTML = '<img alt=""><span>CLICK</span>';
+wheelEl.append(center);
+
+// The rules the real app will use: no duplicates on the wheel; centre is independent.
+function placeOnSlot(id, i, from) {
+  if (from && from.from === 'slot') { [wheel[from.i], wheel[i]] = [wheel[i], wheel[from.i]]; return; }
+  const j = wheel.indexOf(id);
+  if (j >= 0) [wheel[j], wheel[i]] = [wheel[i], wheel[j]]; else wheel[i] = id;
+}
+const placeOnCenter = (id) => { clickId = id; };
+
+function render() {
+  slots.forEach((s, i) => {
+    const p = PINGS[wheel[i]];
+    s.el.querySelector('img').src = T + p.icon + '.png';
+    s.el.title = `${DIRS[i]}: ${p.name}`;
+    s.el.classList.toggle('picked', picked?.from === 'slot' && picked.i === i);
+  });
+  center.querySelector('img').src = T + PINGS[clickId].icon + '.png';
+  center.title = `Alt + click: ${PINGS[clickId].name}`;
+  center.classList.toggle('picked', picked?.from === 'center');
+  center.classList.toggle('off', !document.getElementById('click').checked);
+  document.querySelectorAll('.tile').forEach((t) => {
+    const i = wheel.indexOf(t.dataset.id);
+    t.classList.toggle('used', i >= 0); t.dataset.slot = i >= 0 ? DIRS[i] : '';
+    t.classList.toggle('picked', picked?.from === 'pool' && picked.id === t.dataset.id);
+  });
+  document.getElementById('hint').textContent = picked ? `Now click a slot (or the centre) to place ${PINGS[picked.id].name}. Esc cancels.` : ' ';
+}
+
+const audio = {};
+function play(id) {
+  const a = (audio[id] ??= new Audio(SND + PINGS[id].sound + '.wav'));
+  a.currentTime = 0; a.volume = 0.6; void a.play().catch(() => {});
+}
+
+const tiles = document.getElementById('tiles');
+for (const [id, p] of Object.entries(PINGS)) {
+  const t = document.createElement('div');
+  t.className = 'tile'; t.dataset.id = id; t.draggable = true; t.tabIndex = 0;
+  t.innerHTML = `${p.isNew ? '<span class="new">NEW</span>' : ''}<img alt="" src="${T + p.icon}.png">${p.name}`;
+  t.addEventListener('click', () => { play(id); picked = picked?.from === 'pool' && picked.id === id ? null : { from: 'pool', id }; render(); });
+  t.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); t.click(); } });
+  t.addEventListener('dragstart', (e) => { drag = { from: 'pool', id }; t.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; });
+  t.addEventListener('dragend', () => t.classList.remove('dragging'));
+  tiles.append(t);
+}
+
+let drag = null;
+const hot = (el, on) => el.classList.toggle('hot', on);
+slots.forEach((s, i) => {
+  const targets = [s.el, s.wedge];
+  s.el.addEventListener('dragstart', (e) => { drag = { from: 'slot', id: wheel[i], i }; s.el.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; });
+  s.el.addEventListener('dragend', () => s.el.classList.remove('dragging'));
+  for (const el of targets) {
+    el.addEventListener('dragover', (e) => { e.preventDefault(); hot(s.wedge, true); hot(s.el, true); });
+    el.addEventListener('dragleave', () => { hot(s.wedge, false); hot(s.el, false); });
+    el.addEventListener('drop', (e) => { e.preventDefault(); hot(s.wedge, false); hot(s.el, false); if (drag) { placeOnSlot(drag.id, i, drag); drag = null; picked = null; render(); } });
+    el.addEventListener('click', () => {
+      if (picked && picked.from !== 'center') { placeOnSlot(picked.id, i, picked); picked = null; }
+      else if (picked?.from === 'center') { placeOnSlot(clickId, i, null); picked = null; }
+      else picked = { from: 'slot', id: wheel[i], i };
+      render();
+    });
+  }
+  s.el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); s.el.click(); } });
+});
+center.addEventListener('dragstart', (e) => { drag = { from: 'center', id: clickId }; e.dataTransfer.effectAllowed = 'move'; });
+center.addEventListener('dragover', (e) => { e.preventDefault(); hot(center, true); });
+center.addEventListener('dragleave', () => hot(center, false));
+center.addEventListener('drop', (e) => { e.preventDefault(); hot(center, false); if (drag) { placeOnCenter(drag.id); drag = null; picked = null; render(); } });
+center.addEventListener('click', () => { if (picked) { placeOnCenter(picked.id); picked = null; } else picked = { from: 'center', id: clickId }; render(); });
+center.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); center.click(); } });
+// Dragging a slot's ping onto the centre copies it (the centre is independent), and dropping on empty space does nothing.
+
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { picked = null; render(); } });
+document.getElementById('reset').addEventListener('click', () => { wheel = [...DEFAULT_WHEEL]; clickId = 'generic'; picked = null; render(); });
+document.getElementById('click').addEventListener('change', render);
+document.getElementById('theme').addEventListener('click', () => {
+  const r = document.documentElement, dark = matchMedia('(prefers-color-scheme: dark)').matches;
+  const cur = r.dataset.theme ?? (dark ? 'dark' : 'light');
+  r.dataset.theme = cur === 'dark' ? 'light' : 'dark';
+});
+render();
+</script>
+</body>
+</html>

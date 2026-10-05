@@ -1,0 +1,61 @@
+name: Release
+
+# Push a tag that matches package.json's version (for example v0.2.0) to build both installers and publish them.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check the tag matches package.json
+        run: test "v$(node -p "require('./package.json').version")" = "$GITHUB_REF_NAME"
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1 \
+            || gh release create "$GITHUB_REF_NAME" --title "lolPing $GITHUB_REF_NAME" --generate-notes
+
+  windows:
+    needs: release
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:helper
+      - run: npm test
+      - run: npm run dist
+      - name: Upload the installer
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$GITHUB_REF_NAME" "release/lolPing-Setup-${GITHUB_REF_NAME#v}.exe" --clobber
+
+  mac:
+    needs: release
+    runs-on: macos-latest # Apple Silicon
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:helper
+      - run: npm test
+      - run: npm run dist:mac
+      - run: codesign --verify --deep --strict "release/mac-arm64/lolPing.app"
+      - name: Upload the disk image
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$GITHUB_REF_NAME" "release/lolPing-${GITHUB_REF_NAME#v}-arm64.dmg" --clobber

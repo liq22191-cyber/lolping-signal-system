@@ -1,0 +1,28 @@
+node_modules/
+out/
+dist/
+release/
+site-dist/
+native/hook-helper/build/
+*.log
+.DS_Store
+
+# --- 本地新增（2026-10-05，中文环境适配）---
+# 打包时 Electron 运行时会解压到项目根目录，这些不是源码
+/resources/
+/resources.pak
+# 本地工作目录：调试文件、日志（含本机局域网 IP / 昵称等个人信息）
+/临时/
+# 打包残留（原先散落在根目录的 Electron 运行时文件）
+LICENSE.electron.txt
+LICENSES.chromium.html
+*.pak
+*.dll
+*.dat
+snapshot_blob.bin
+v8_context_snapshot.bin
+vk_swiftshader_icd.json
+/locales/
+/version
+/Uninstall lolPing.exe
+/lolPing.exe

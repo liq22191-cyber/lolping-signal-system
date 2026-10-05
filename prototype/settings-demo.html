@@ -1,0 +1,268 @@
+<!doctype html>
+<!-- THROWAWAY PROTOTYPE: look-and-feel demo of the settings window (Fluent 2 styling by hand). Not app code. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>lolPing Settings Demo</title>
+<style>
+  :root {
+    --bg: #202020; --mica: rgba(32,32,32,.82); --card: rgba(255,255,255,.05); --card-hover: rgba(255,255,255,.08);
+    --stroke: rgba(255,255,255,.07); --text: #fff; --text2: rgba(255,255,255,.79); --text3: rgba(255,255,255,.55);
+    --accent: #60cdff; --accent-text: #000; --ctrl: rgba(255,255,255,.06); --ctrl-hover: rgba(255,255,255,.09);
+    --ctrl-stroke: rgba(255,255,255,.09); --nav-sel: rgba(255,255,255,.06); --track: rgba(255,255,255,.54);
+    --wall1: #2d3d63; --wall2: #5a2f57; --flyout: rgba(44,44,44,.96); --flyout-stroke: rgba(0,0,0,.4);
+  }
+  @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) {
+    --bg: #f3f3f3; --mica: rgba(243,243,243,.85); --card: rgba(255,255,255,.7); --card-hover: rgba(249,249,249,.9);
+    --stroke: rgba(0,0,0,.06); --text: #1a1a1a; --text2: rgba(0,0,0,.72); --text3: rgba(0,0,0,.5);
+    --accent: #005fb8; --accent-text: #fff; --ctrl: rgba(255,255,255,.7); --ctrl-hover: rgba(249,249,249,.5);
+    --ctrl-stroke: rgba(0,0,0,.1); --nav-sel: rgba(0,0,0,.04); --track: rgba(0,0,0,.45); --wall1: #9db4e8; --wall2: #e3b6d8; --flyout: rgba(252,252,252,.96); --flyout-stroke: rgba(0,0,0,.08); } }
+  :root[data-theme="light"] {
+    --bg: #f3f3f3; --mica: rgba(243,243,243,.85); --card: rgba(255,255,255,.7); --card-hover: rgba(249,249,249,.9);
+    --stroke: rgba(0,0,0,.06); --text: #1a1a1a; --text2: rgba(0,0,0,.72); --text3: rgba(0,0,0,.5);
+    --accent: #005fb8; --accent-text: #fff; --ctrl: rgba(255,255,255,.7); --ctrl-hover: rgba(249,249,249,.5);
+    --ctrl-stroke: rgba(0,0,0,.1); --nav-sel: rgba(0,0,0,.04); --track: rgba(0,0,0,.45); --wall1: #9db4e8; --wall2: #e3b6d8; --flyout: rgba(252,252,252,.96); --flyout-stroke: rgba(0,0,0,.08); }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body { font: 14px/20px "Segoe UI Variable Text", "Segoe UI", sans-serif; color: var(--text); display: grid; place-items: center;
+    background: radial-gradient(900px 600px at 15% 20%, var(--wall1), transparent 70%), radial-gradient(800px 600px at 90% 90%, var(--wall2), transparent 70%), var(--bg); }
+  .win { width: min(980px, 100vw - 32px); height: min(680px, 100vh - 32px); border-radius: 8px; overflow: hidden; display: grid;
+    grid-template-rows: 40px 1fr; grid-template-columns: 240px 1fr; background: var(--mica); backdrop-filter: blur(60px) saturate(1.4);
+    border: 1px solid var(--stroke); box-shadow: 0 32px 64px rgba(0,0,0,.37), 0 2px 21px rgba(0,0,0,.3); }
+  .title { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; padding-left: 16px; font-size: 12px; color: var(--text2); }
+  .title img { width: 16px; height: 16px; }
+  .title .caps { margin-left: auto; display: flex; }
+  .title .caps span { width: 46px; height: 40px; display: grid; place-items: center; font-family: "Segoe Fluent Icons", "Segoe MDL2 Assets"; font-size: 10px; color: var(--text2); }
+  .title .caps span:hover { background: var(--ctrl-hover); } .title .caps span:last-child:hover { background: #c42b1c; color: #fff; }
+  nav { padding: 4px 8px; display: flex; flex-direction: column; gap: 3px; }
+  nav .hdr { display: flex; align-items: center; gap: 12px; padding: 8px 10px 16px; }
+  nav .hdr img { width: 40px; height: 40px; } nav .hdr b { font: 600 16px "Segoe UI Variable Display", "Segoe UI"; display: block; }
+  nav .hdr small { color: var(--text3); font-size: 12px; }
+  nav a { position: relative; display: flex; align-items: center; gap: 14px; height: 36px; padding: 0 12px; border-radius: 4px; color: var(--text); text-decoration: none; cursor: default; }
+  nav a:hover { background: var(--nav-sel); } nav a.sel { background: var(--nav-sel); }
+  nav a.sel::before { content: ""; position: absolute; left: 0; top: 10px; width: 3px; height: 16px; border-radius: 2px; background: var(--accent); }
+  nav a i { font: normal 16px "Segoe Fluent Icons", "Segoe MDL2 Assets"; width: 16px; }
+  main { overflow: auto; padding: 4px 28px 28px 20px; }
+  h1 { font: 600 28px/36px "Segoe UI Variable Display", "Segoe UI"; margin: 6px 0 18px; }
+  h2 { font: 600 14px "Segoe UI Variable Text", "Segoe UI"; margin: 22px 0 8px; }
+  .status { display: flex; align-items: center; gap: 16px; padding: 18px 20px; border-radius: 6px; background: var(--card); border: 1px solid var(--stroke); }
+  .status .dot { width: 10px; height: 10px; border-radius: 50%; background: #6ccb5f; box-shadow: 0 0 8px #6ccb5f; }
+  .status.off .dot { background: var(--text3); box-shadow: none; }
+  .status b { font-size: 16px; } .status small { display: block; color: var(--text3); }
+  .status .toggle { margin-left: auto; }
+  .card { display: flex; align-items: center; gap: 16px; min-height: 68px; padding: 12px 20px; border-radius: 4px; margin-bottom: 3px;
+    background: var(--card); border: 1px solid var(--stroke); }
+  .card:hover { background: var(--card-hover); }
+  .card i.ic { font: normal 18px "Segoe Fluent Icons", "Segoe MDL2 Assets"; width: 20px; color: var(--text); }
+  .card .lbl { flex: 1; } .card .lbl small { display: block; color: var(--text3); font-size: 12px; line-height: 16px; }
+  .card.disabled .lbl, .card.disabled .ctl { opacity: .45; pointer-events: none; }
+  .ctl { display: flex; align-items: center; gap: 10px; }
+  /* toggle switch */
+  .toggle { display: flex; align-items: center; gap: 12px; cursor: default; }
+  .toggle input { appearance: none; width: 40px; height: 20px; border-radius: 10px; border: 1px solid var(--track); position: relative; margin: 0; background: transparent; transition: background .15s; }
+  .toggle input::after { content: ""; position: absolute; top: 3px; left: 3px; width: 12px; height: 12px; border-radius: 50%; background: var(--text2); transition: left .15s cubic-bezier(.3,.7,.4,1.4), width .1s; }
+  .toggle input:active::after { width: 17px; }
+  .toggle input:checked { background: var(--accent); border-color: var(--accent); }
+  .toggle input:checked::after { left: 23px; background: var(--accent-text); }
+  .toggle input:checked:active::after { left: 18px; }
+  .toggle span { min-width: 22px; color: var(--text); }
+  /* Fluent dropdown */
+  .dd { position: relative; }
+  .dd-btn { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-width: 170px; height: 32px; padding: 0 10px 0 11px;
+    border-radius: 4px; font: inherit; color: var(--text); background: var(--ctrl); border: 1px solid var(--ctrl-stroke);
+    border-bottom-color: rgba(127,127,127,.35); cursor: default; position: relative; overflow: hidden; }
+  .dd-btn:hover { background: var(--ctrl-hover); }
+  .dd-btn svg { color: var(--text2); transition: transform .2s cubic-bezier(.1,.9,.2,1); }
+  .dd.open .dd-btn svg { transform: rotate(180deg); }
+  .dd.open .dd-btn::after, .dd-btn:focus-visible::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--accent); }
+  .dd-btn:focus-visible { outline: none; }
+  .dd-list { position: absolute; right: 0; top: calc(100% + 4px); z-index: 10; min-width: 100%; width: 200px; padding: 4px; border-radius: 8px;
+    background: var(--flyout); backdrop-filter: blur(30px) saturate(1.5); border: 1px solid var(--flyout-stroke);
+    box-shadow: 0 8px 16px rgba(0,0,0,.26), 0 0 2px rgba(0,0,0,.2);
+    opacity: 0; transform: translateY(-8px); pointer-events: none; transition: opacity .12s, transform .2s cubic-bezier(.1,.9,.2,1); }
+  .dd.open .dd-list { opacity: 1; transform: none; pointer-events: auto; }
+  .dd-grp { padding: 6px 10px 2px; font-size: 12px; font-weight: 600; color: var(--text3); }
+  .dd-sep { height: 1px; margin: 4px 2px; background: var(--stroke); }
+  .dd-opt { position: relative; display: flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 4px; cursor: default; }
+  .dd-opt small { color: var(--text3); font-size: 12px; }
+  .dd-opt:hover, .dd-opt.active { background: var(--ctrl-hover); }
+  .dd-opt[aria-selected="true"]::before { content: ""; position: absolute; left: 0; top: 9px; width: 3px; height: 14px; border-radius: 2px; background: var(--accent); }
+  /* slider */
+  input[type=range] { appearance: none; width: 200px; height: 20px; background: transparent; margin: 0; }
+  input[type=range]::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: linear-gradient(to right, var(--accent) var(--p), var(--track) var(--p)); }
+  input[type=range]::-webkit-slider-thumb { appearance: none; width: 20px; height: 20px; margin-top: -8px; border-radius: 50%; background: var(--accent);
+    border: 5px solid var(--bg); box-shadow: 0 0 0 1px var(--ctrl-stroke); transition: border-width .1s; }
+  input[type=range]::-webkit-slider-thumb:hover { border-width: 4px; } input[type=range]::-webkit-slider-thumb:active { border-width: 6px; }
+  .val { min-width: 52px; text-align: right; color: var(--text2); font-variant-numeric: tabular-nums; }
+  /* shortcut capture */
+  .keys { display: flex; align-items: center; gap: 4px; height: 32px; padding: 0 6px 0 6px; border-radius: 4px; border: 1px solid var(--ctrl-stroke); background: var(--ctrl); }
+  .keys:hover { background: var(--ctrl-hover); }
+  .keys kbd { font: 600 12px "Segoe UI"; padding: 3px 8px; border-radius: 4px; background: var(--accent); color: var(--accent-text); }
+  .keys.listening { outline: 2px solid var(--accent); outline-offset: -1px; }
+  .keys.listening kbd { display: none; } .keys .hint { display: none; color: var(--text3); font-size: 12px; padding: 0 6px; }
+  .keys.listening .hint { display: inline; }
+  .keys i { font: normal 12px "Segoe Fluent Icons", "Segoe MDL2 Assets"; padding: 4px 6px; color: var(--text2); }
+  button.btn { height: 32px; padding: 0 14px; border-radius: 4px; font: inherit; color: var(--text); background: var(--ctrl); border: 1px solid var(--ctrl-stroke); border-bottom-color: rgba(127,127,127,.35); }
+  button.btn:hover { background: var(--ctrl-hover); }
+  .previews { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; padding: 14px 20px 16px; border-radius: 4px; background: var(--card); border: 1px solid var(--stroke); }
+  .previews button { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 4px 8px; border-radius: 6px; font: 12px "Segoe UI"; color: var(--text2);
+    background: var(--ctrl); border: 1px solid var(--ctrl-stroke); }
+  .previews button:hover { background: var(--ctrl-hover); } .previews button:active { transform: scale(.97); }
+  .previews img { width: 40px; height: 40px; }
+  .toast { position: fixed; right: 24px; bottom: 24px; width: 340px; padding: 14px 16px; border-radius: 8px; display: flex; gap: 12px; align-items: center;
+    background: var(--mica); backdrop-filter: blur(40px); border: 1px solid var(--stroke); box-shadow: 0 16px 32px rgba(0,0,0,.35);
+    transform: translateY(140%); transition: transform .3s cubic-bezier(.1,.9,.2,1); }
+  .toast.show { transform: none; } .toast img { width: 32px; } .toast small { display: block; color: var(--text3); }
+  .themebtn { position: fixed; left: 16px; bottom: 16px; }
+  @media (max-width: 720px) { .win { grid-template-columns: 1fr; } nav { display: none; } .card { flex-wrap: wrap; } }
+</style>
+</head>
+<body>
+<div class="win">
+  <div class="title"><img src="../assets/textures/generic_ping.png" alt="">lolPing <span class="caps"><span>&#xE921;</span><span>&#xE922;</span><span>&#xE8BB;</span></span></div>
+  <nav>
+    <div class="hdr"><img src="../assets/textures/pingwheel_basicpingrender.png" alt=""><div><b>lolPing</b><small>Ping anywhere</small></div></div>
+    <a class="sel" href="#trigger"><i>&#xE962;</i>Trigger</a>
+    <a href="#toggle"><i>&#xE765;</i>Toggle</a>
+    <a href="#pings"><i>&#xE767;</i>Pings &amp; sound</a>
+    <a href="#preview"><i>&#xE768;</i>Preview</a>
+    <a href="#app"><i>&#xE713;</i>App</a>
+  </nav>
+  <main>
+    <h1>Settings</h1>
+    <div class="status" id="status"><div class="dot"></div><div><b id="stTitle">Pinging is on</b><small>Hold <span class="trg">Alt</span> and drag to open the ping wheel · <span class="hk">Ctrl + Alt + P</span> to turn off</small></div>
+      <label class="toggle"><span id="stLbl">On</span><input type="checkbox" id="master" checked></label></div>
+
+    <h2 id="trigger">Trigger</h2>
+    <div class="card"><i class="ic">&#xE962;</i><div class="lbl">Trigger key<small>Hold this, then drag with the left mouse button to open the wheel</small></div>
+      <div class="ctl"><div class="dd" id="trigger-key" data-value="Alt">
+        <button class="dd-btn" aria-haspopup="listbox"><span class="dd-val">Alt</span><svg width="12" height="12"><path d="M2.5 4.5l3.5 3.5 3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="dd-list" role="listbox">
+          <div class="dd-grp">Keyboard</div>
+          <div class="dd-opt" role="option">Alt</div><div class="dd-opt" role="option">Ctrl</div><div class="dd-opt" role="option">Shift</div>
+          <div class="dd-opt" role="option">Win</div><div class="dd-opt" role="option">Caps Lock</div>
+          <div class="dd-sep"></div><div class="dd-grp">Mouse</div>
+          <div class="dd-opt" role="option" data-label="Mouse 4">Mouse 4 <small>back</small></div><div class="dd-opt" role="option" data-label="Mouse 5">Mouse 5 <small>forward</small></div>
+          <div class="dd-sep"></div>
+          <div class="dd-opt" role="option" data-label="Custom key">Custom key…</div>
+        </div></div></div></div>
+    <div class="card"><i class="ic">&#xE7C9;</i><div class="lbl">Drag distance<small>How far the mouse must move before the wheel opens</small></div>
+      <div class="ctl"><input type="range" min="2" max="40" value="8" data-unit=" px"><span class="val"></span></div></div>
+    <div class="card"><i class="ic">&#xE8B0;</i><div class="lbl"><span class="trg">Alt</span> + click places a generic ping<small>When off, <span class="trg">Alt</span> + click passes straight through to the app underneath</small></div>
+      <div class="ctl"><label class="toggle"><span>Off</span><input type="checkbox" class="sw"></label></div></div>
+
+    <h2 id="toggle">Toggle</h2>
+    <div class="card"><i class="ic">&#xE765;</i><div class="lbl">Enable / disable shortcut<small>Works anywhere, even while pinging is off</small></div>
+      <div class="ctl"><div class="keys" id="hotkey" tabindex="0"><kbd>Ctrl</kbd><kbd>Alt</kbd><kbd>P</kbd><span class="hint">Press a shortcut…</span><i>&#xE70F;</i></div></div></div>
+    <div class="card"><i class="ic">&#xE7E8;</i><div class="lbl">Start enabled<small>Pinging is on when lolPing launches</small></div>
+      <div class="ctl"><label class="toggle"><span>On</span><input type="checkbox" class="sw" checked></label></div></div>
+
+    <h2 id="pings">Pings &amp; sound</h2>
+    <div class="card"><i class="ic">&#xE740;</i><div class="lbl">Ping size</div>
+      <div class="ctl"><input type="range" min="60" max="220" value="110" data-unit=" px"><span class="val"></span></div></div>
+    <div class="card"><i class="ic">&#xE916;</i><div class="lbl">Ping duration<small>How long a ping stays on screen</small></div>
+      <div class="ctl"><input type="range" min="10" max="80" value="32" data-unit=" s" data-scale="0.1"><span class="val"></span></div></div>
+    <div class="card"><i class="ic">&#xE767;</i><div class="lbl">Volume</div>
+      <div class="ctl"><input type="range" min="0" max="100" value="70" data-unit=""><span class="val"></span></div></div>
+    <div class="card"><i class="ic">&#xE8D6;</i><div class="lbl">Wheel tick sound<small>Plays a quiet click when hovering a new slice</small></div>
+      <div class="ctl"><label class="toggle"><span>On</span><input type="checkbox" class="sw" checked></label></div></div>
+
+    <h2 id="preview">Preview</h2>
+    <div class="previews" id="previews"></div>
+
+    <h2 id="app">App</h2>
+    <div class="card"><i class="ic">&#xE7E8;</i><div class="lbl">Launch at Windows startup</div>
+      <div class="ctl"><label class="toggle"><span>Off</span><input type="checkbox" class="sw"></label></div></div>
+    <div class="card"><i class="ic">&#xE946;</i><div class="lbl">About<small>lolPing 0.1.0 · Assets © Riot Games, extracted from your local install</small></div>
+      <div class="ctl"><button class="btn">Open settings folder</button></div></div>
+  </main>
+</div>
+<div class="toast" id="toast"><img src="../assets/textures/generic_ping.png" alt=""><div><b id="tTitle">Pings on</b><small>Ctrl + Alt + P to toggle</small></div></div>
+<button class="btn themebtn" id="theme">Toggle light / dark</button>
+
+<script>
+const T = '../assets/textures/', S = '../assets/sounds/';
+// sliders: fill + value label
+document.querySelectorAll('input[type=range]').forEach(r => {
+  const out = r.nextElementSibling, sc = +(r.dataset.scale || 1);
+  const upd = () => { r.style.setProperty('--p', ((r.value - r.min) / (r.max - r.min) * 100) + '%'); out.textContent = (r.value * sc).toFixed(sc < 1 ? 1 : 0) + r.dataset.unit; };
+  r.addEventListener('input', upd); upd();
+});
+// toggles: On/Off label
+document.querySelectorAll('.sw').forEach(s => s.addEventListener('change', () => s.previousElementSibling.textContent = s.checked ? 'On' : 'Off'));
+// Fluent dropdown
+document.querySelectorAll('.dd').forEach(dd => {
+  const btn = dd.querySelector('.dd-btn'), opts = [...dd.querySelectorAll('.dd-opt')];
+  const label = o => o.dataset.label || o.textContent.trim();
+  let act = -1;
+  const mark = () => opts.forEach(o => o.setAttribute('aria-selected', label(o) === dd.dataset.value));
+  const setAct = i => { act = (i + opts.length) % opts.length; opts.forEach((o, k) => o.classList.toggle('active', k === act)); };
+  const open = v => { dd.classList.toggle('open', v); if (v) setAct(opts.findIndex(o => label(o) === dd.dataset.value)); else opts.forEach(o => o.classList.remove('active')); };
+  const choose = o => { dd.dataset.value = label(o); dd.querySelector('.dd-val').textContent = label(o); mark(); open(false); btn.focus();
+    dd.dispatchEvent(new CustomEvent('change', { detail: label(o) })); };
+  btn.addEventListener('click', () => open(!dd.classList.contains('open')));
+  opts.forEach((o, k) => { o.addEventListener('click', () => choose(o)); o.addEventListener('mousemove', () => setAct(k)); });
+  btn.addEventListener('keydown', e => {
+    const isOpen = dd.classList.contains('open');
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); if (!isOpen) open(true); else setAct(act + (e.key === 'ArrowDown' ? 1 : -1)); }
+    else if ((e.key === 'Enter' || e.key === ' ') && isOpen) { e.preventDefault(); choose(opts[act]); }
+    else if (e.key === 'Escape' || e.key === 'Tab') open(false);
+  });
+  document.addEventListener('pointerdown', e => { if (!dd.contains(e.target)) open(false); });
+  mark();
+});
+// trigger key name everywhere
+document.getElementById('trigger-key').addEventListener('change', e => document.querySelectorAll('.trg').forEach(t => t.textContent = e.detail));
+// master switch + toast
+const toast = document.getElementById('toast'); let tt;
+function setMaster(on) {
+  document.getElementById('master').checked = on;
+  document.getElementById('status').classList.toggle('off', !on);
+  document.getElementById('stTitle').textContent = on ? 'Pinging is on' : 'Pinging is off';
+  document.getElementById('stLbl').textContent = on ? 'On' : 'Off';
+  document.querySelectorAll('main .card').forEach((c, i) => { if (i < 3 || (i > 4 && i < 9)) c.classList.toggle('disabled', !on); });
+  document.getElementById('tTitle').textContent = on ? 'Pings on' : 'Pings off';
+  toast.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => toast.classList.remove('show'), 1800);
+}
+document.getElementById('master').addEventListener('change', e => setMaster(e.target.checked));
+// shortcut capture
+const hk = document.getElementById('hotkey');
+hk.addEventListener('click', () => { hk.classList.add('listening'); hk.focus(); });
+hk.addEventListener('blur', () => hk.classList.remove('listening'));
+hk.addEventListener('keydown', e => {
+  if (!hk.classList.contains('listening')) return; e.preventDefault();
+  if (['Control', 'Alt', 'Shift', 'Meta'].includes(e.key)) return;
+  if (e.key === 'Escape') return hk.blur();
+  const parts = [e.ctrlKey && 'Ctrl', e.altKey && 'Alt', e.shiftKey && 'Shift', e.metaKey && 'Win', e.key.length === 1 ? e.key.toUpperCase() : e.key].filter(Boolean);
+  hk.querySelectorAll('kbd').forEach(k => k.remove());
+  parts.reverse().forEach(p => { const k = document.createElement('kbd'); k.textContent = p; hk.prepend(k); });
+  document.querySelectorAll('.hk').forEach(h => h.textContent = parts.slice().reverse().join(' + '));
+  hk.blur();
+});
+// preview buttons (play sound; real app would also show the ping on screen)
+const ctx = new AudioContext(), bufs = {};
+const PREV = [['Danger','pingwheel_retreatrender','SRP_12'],['Push','push','SRP_9'],['On My Way','omw','OnMyWay'],['All In','all_in','SRP_4'],
+  ['Assist Me','assist_me','ComeHere'],['Need Vision','need_vision','SRP_7'],['Enemy Missing','enemy_missing','MIA'],['Enemy Vision','enemy_vision','AreaIsWarded'],['Generic','generic_ping','Base']];
+const pv = document.getElementById('previews');
+PREV.forEach(([n, ic, snd]) => {
+  fetch(S + snd + '.wav').then(r => r.arrayBuffer()).then(b => ctx.decodeAudioData(b)).then(x => bufs[snd] = x);
+  const b = document.createElement('button'); b.innerHTML = `<img src="${T + ic}.png" alt="">${n}`;
+  b.onclick = () => { ctx.resume(); const s = ctx.createBufferSource(); s.buffer = bufs[snd]; s.connect(ctx.destination); s.start(); };
+  pv.appendChild(b);
+});
+// nav highlight
+const main = document.querySelector('main'), links = [...document.querySelectorAll('nav a')];
+links.forEach(a => a.addEventListener('click', e => { e.preventDefault(); document.querySelector(a.getAttribute('href')).scrollIntoView({ behavior: 'smooth' }); }));
+main.addEventListener('scroll', () => {
+  let cur = links[0];
+  for (const a of links) if (document.querySelector(a.getAttribute('href')).offsetTop - main.offsetTop - 40 <= main.scrollTop) cur = a;
+  links.forEach(a => a.classList.toggle('sel', a === cur));
+});
+// theme toggle (demo only; real app follows the system)
+document.getElementById('theme').onclick = () => {
+  const r = document.documentElement, dark = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  r.dataset.theme = dark ? 'light' : 'dark';
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>lolPing Mac Settings</title>
+<style>
+:root {
+  --bg: #ececec; --win: #f5f5f7; --side: rgba(232,232,236,.82); --card: #fff; --text: #1d1d1f; --sub: #6e6e73;
+  --sep: rgba(0,0,0,.09); --accent: #007aff; --sel: rgba(0,0,0,.08); --track: #e3e3e8; --warn: #ff9f0a;
+  --shadow: 0 22px 70px rgba(0,0,0,.28), 0 0 0 .5px rgba(0,0,0,.25);
+}
+:root[data-theme="dark"] {
+  --bg: #1b1b1d; --win: #1e1e20; --side: rgba(44,44,48,.78); --card: #2a2a2d; --text: #f5f5f7; --sub: #98989d;
+  --sep: rgba(255,255,255,.08); --sel: rgba(255,255,255,.1); --track: #3a3a3d;
+  --shadow: 0 22px 70px rgba(0,0,0,.6), 0 0 0 .5px rgba(255,255,255,.15);
+}
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; background: radial-gradient(circle at 20% 10%, #8fb3ff55, transparent 50%), radial-gradient(circle at 80% 90%, #ff9fd055, transparent 50%), var(--bg);
+  font: 13px/1.35 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif; color: var(--text);
+  display: grid; place-items: center; padding: 32px 16px; -webkit-font-smoothing: antialiased; }
+.window { width: min(860px, 100%); height: 640px; display: flex; border-radius: 12px; overflow: hidden; background: var(--win); box-shadow: var(--shadow); }
+.side { width: 210px; flex: none; background: var(--side); backdrop-filter: blur(30px) saturate(1.6); border-right: .5px solid var(--sep); padding: 12px 10px; display: flex; flex-direction: column; gap: 2px; }
+.lights { display: flex; gap: 8px; padding: 2px 6px 18px; }
+.lights i { width: 12px; height: 12px; border-radius: 50%; background: #ff5f57; box-shadow: inset 0 0 0 .5px rgba(0,0,0,.2); }
+.lights i:nth-child(2) { background: #febc2e; } .lights i:nth-child(3) { background: #28c840; }
+.search { margin: 0 4px 10px; padding: 5px 8px; border-radius: 7px; background: var(--sel); color: var(--sub); font-size: 13px; }
+.nav { display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-radius: 7px; cursor: default; }
+.nav b { width: 20px; height: 20px; border-radius: 5px; display: grid; place-items: center; color: #fff; font-size: 11px; font-weight: 600; }
+.nav.on { background: var(--accent); color: #fff; }
+.main { flex: 1; overflow-y: auto; }
+.bar { position: sticky; top: 0; z-index: 2; height: 52px; display: flex; align-items: center; justify-content: space-between; padding: 0 22px; background: color-mix(in srgb, var(--win) 80%, transparent); backdrop-filter: blur(20px); border-bottom: .5px solid var(--sep); }
+.bar h1 { font-size: 15px; font-weight: 600; margin: 0; }
+.theme { font: inherit; font-size: 12px; border: .5px solid var(--sep); background: var(--card); color: var(--text); border-radius: 6px; padding: 3px 9px; }
+.content { padding: 18px 22px 40px; max-width: 620px; margin: 0 auto; }
+h2 { font-size: 13px; font-weight: 600; margin: 22px 8px 7px; }
+.group { background: var(--card); border-radius: 10px; box-shadow: 0 0 0 .5px var(--sep); }
+.row { display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 9px 12px; }
+.row + .row { border-top: .5px solid var(--sep); margin-left: 12px; padding-left: 0; }
+.row .t { flex: 1; } .row small { display: block; color: var(--sub); font-size: 11.5px; margin-top: 2px; }
+.hero { display: flex; gap: 14px; align-items: center; padding: 16px; }
+.hero img { width: 54px; height: 54px; filter: drop-shadow(0 4px 8px rgba(0,122,255,.35)); }
+.hero .t b { font-size: 17px; font-weight: 600; display: block; }
+.perm { display: flex; gap: 12px; align-items: flex-start; padding: 14px; border-radius: 10px; background: color-mix(in srgb, var(--warn) 14%, var(--card)); box-shadow: 0 0 0 .5px color-mix(in srgb, var(--warn) 50%, transparent); margin-bottom: 4px; }
+.perm .ic { width: 28px; height: 28px; border-radius: 7px; background: var(--warn); color: #fff; display: grid; place-items: center; font-weight: 700; flex: none; }
+.perm ol { margin: 6px 0 10px; padding-left: 18px; color: var(--sub); }
+.btn { font: inherit; border: 0; border-radius: 6px; padding: 4px 12px; background: var(--card); color: var(--text); box-shadow: 0 0 0 .5px rgba(0,0,0,.2), 0 1px 1px rgba(0,0,0,.08); }
+.btn.primary { background: var(--accent); color: #fff; box-shadow: none; }
+.sw { appearance: none; width: 38px; height: 22px; border-radius: 11px; background: var(--track); position: relative; transition: background .2s; flex: none; margin: 0; }
+.sw::after { content: ""; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.3); transition: transform .2s; }
+.sw:checked { background: #34c759; } .sw:checked::after { transform: translateX(16px); }
+select { font: inherit; color: var(--text); background: var(--card); border: 0; border-radius: 6px; padding: 3px 22px 3px 9px; box-shadow: 0 0 0 .5px rgba(0,0,0,.2), 0 1px 1px rgba(0,0,0,.08); }
+.keys { display: flex; gap: 4px; }
+kbd { font: 500 12px -apple-system, sans-serif; min-width: 24px; text-align: center; padding: 3px 7px; border-radius: 5px; background: var(--sel); box-shadow: inset 0 -1px 0 var(--sep); }
+input[type=range] { width: 170px; accent-color: var(--accent); }
+.val { width: 46px; text-align: right; color: var(--sub); font-variant-numeric: tabular-nums; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 10px; padding: 12px; }
+.tile { display: grid; justify-items: center; gap: 6px; padding: 10px 4px; border-radius: 8px; font-size: 11.5px; color: var(--sub); }
+.tile:hover { background: var(--sel); }
+.tile img { width: 40px; height: 40px; }
+@media (max-width: 640px) { .side { display: none; } .window { height: auto; } input[type=range] { width: 100px; } }
+</style>
+</head>
+<body>
+<div class="window">
+  <aside class="side">
+    <div class="lights"><i></i><i></i><i></i></div>
+    <div class="search">Search</div>
+    <div class="nav on"><b style="background:#007aff">◎</b>Trigger</div>
+    <div class="nav"><b style="background:#8e8e93">⌥</b>Toggle</div>
+    <div class="nav"><b style="background:#ff2d55">♪</b>Pings &amp; Sound</div>
+    <div class="nav"><b style="background:#34c759">▦</b>Preview</div>
+    <div class="nav"><b style="background:#5856d6">i</b>General</div>
+  </aside>
+  <main class="main">
+    <div class="bar"><h1>lolPing</h1><button class="theme" id="theme">Dark</button></div>
+    <div class="content">
+      <div class="perm" id="perm">
+        <div class="ic">!</div>
+        <div class="t">
+          <b>lolPing needs Accessibility access</b>
+          <ol><li>Click <b>Open System Settings</b>.</li><li>Turn on <b>lolPing</b> under Privacy &amp; Security → Accessibility.</li><li>Updated lolPing? Remove it with <b>–</b> and turn it on again.</li></ol>
+          <button class="btn primary" onclick="document.getElementById('perm').remove()">Open System Settings</button>
+        </div>
+      </div>
+
+      <div class="group hero">
+        <img src="../assets/textures/generic_ping.png" alt="">
+        <div class="t"><b>Pinging is on</b><small>Hold ⌥ Option and drag to ping · ⌃⌥P to turn off</small></div>
+        <input class="sw" type="checkbox" checked>
+      </div>
+
+      <h2>Trigger</h2>
+      <div class="group">
+        <div class="row"><div class="t">Trigger key</div>
+          <select><optgroup label="Keyboard"><option>⌥ Option</option><option>⌃ Control</option><option>⇧ Shift</option><option>⌘ Command</option></optgroup><optgroup label="Mouse"><option>Mouse 4</option><option>Mouse 5</option></optgroup><option>Custom key…</option></select></div>
+        <div class="row"><div class="t">Drag distance<small>How far to drag before the wheel opens</small></div><input type="range" min="2" max="40" value="8" oninput="this.nextElementSibling.textContent=this.value+' pt'"><span class="val">8 pt</span></div>
+        <div class="row"><div class="t">⌥-click places a generic ping<small>Off keeps ordinary Option-click shortcuts working</small></div><input class="sw" type="checkbox"></div>
+      </div>
+
+      <h2>Toggle</h2>
+      <div class="group">
+        <div class="row"><div class="t">Turn pinging on or off</div><div class="keys"><kbd>⌃</kbd><kbd>⌥</kbd><kbd>P</kbd></div></div>
+        <div class="row"><div class="t">On when lolPing starts</div><input class="sw" type="checkbox" checked></div>
+      </div>
+
+      <h2>Pings &amp; Sound</h2>
+      <div class="group">
+        <div class="row"><div class="t">Ping size</div><input type="range" min="60" max="220" value="110" oninput="this.nextElementSibling.textContent=this.value+' pt'"><span class="val">110 pt</span></div>
+        <div class="row"><div class="t">Ping duration</div><input type="range" min="10" max="80" value="32" oninput="this.nextElementSibling.textContent=(this.value/10).toFixed(1)+' s'"><span class="val">3.2 s</span></div>
+        <div class="row"><div class="t">Volume</div><input type="range" min="0" max="100" value="70" oninput="this.nextElementSibling.textContent=this.value+'%'"><span class="val">70%</span></div>
+        <div class="row"><div class="t">Mute</div><input class="sw" type="checkbox"></div>
+        <div class="row"><div class="t">Wheel tick sound</div><input class="sw" type="checkbox" checked></div>
+      </div>
+
+      <h2>Preview</h2>
+      <div class="group grid" id="grid"></div>
+
+      <h2>General</h2>
+      <div class="group">
+        <div class="row"><div class="t">Open at login<small>Starts in the menu bar</small></div><input class="sw" type="checkbox"></div>
+        <div class="row"><div class="t">Language</div><select><option>System</option><option>English</option><option>简体中文</option></select></div>
+        <div class="row"><div class="t">Settings folder<small>~/Library/Application Support/lolPing</small></div><button class="btn">Show in Finder</button></div>
+      </div>
+    </div>
+  </main>
+</div>
+<script>
+const pings = [['retreat','pingwheel_retreatrender','Danger','SRP_12'],['push','push','Push','SRP_9'],['omw','omw','On My Way','OnMyWay'],['allin','all_in','All In','SRP_4'],
+  ['assist','assist_me','Assist Me','ComeHere'],['nv','need_vision','Need Vision','SRP_7'],['mia','enemy_missing','Enemy Missing','MIA'],['ev','enemy_vision','Enemy Vision','AreaIsWarded']];
+const grid = document.getElementById('grid');
+for (const [, img, name, snd] of pings) {
+  const t = document.createElement('div'); t.className = 'tile';
+  t.innerHTML = `<img src="../assets/textures/${img}.png" alt=""><span>${name}</span>`;
+  t.onclick = () => new Audio(`../assets/sounds/${snd}.wav`).play().catch(() => {});
+  grid.append(t);
+}
+const root = document.documentElement, btn = document.getElementById('theme');
+const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+const set = d => { root.dataset.theme = d ? 'dark' : 'light'; btn.textContent = d ? 'Light' : 'Dark'; };
+set(dark); btn.onclick = () => set(root.dataset.theme !== 'dark');
+</script>
+</body>
+</html>

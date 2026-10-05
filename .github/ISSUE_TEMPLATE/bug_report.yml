@@ -1,0 +1,34 @@
+name: Bug report
+description: Something in lolPing doesn't work as expected
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: lolPing version
+      description: Settings → About shows it.
+      placeholder: 0.2.1
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Windows or macOS version
+      placeholder: Windows 11 24H2, or macOS 15.4 on an M2
+  - type: textarea
+    id: setup
+    attributes:
+      label: Displays and settings
+      description: Number of monitors and their scale (100 %, 150 %…), the trigger key, and the app you were pinging over.
+  - type: textarea
+    id: problems
+    attributes:
+      label: Problems listed in Settings → About
+      description: Paste anything shown under "Problems", if present.

@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>lolPing: League pings for your Windows desktop</title>
+    <meta
+      name="description"
+      content="Hold Alt, drag, and drop a League of Legends ping anywhere on your Windows desktop, with the original animation and sound. Free and open source."
+    />
+    <meta name="theme-color" content="#010a13" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="lolPing: League pings for your Windows desktop" />
+    <meta property="og:description" content="Hold Alt, drag, and drop a League ping anywhere on your screen. Try it in your browser." />
+    <meta property="og:url" content="https://darrenprx.github.io/lolPing/" />
+    <meta property="og:image" content="https://darrenprx.github.io/lolPing/og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" type="image/png" href="./textures/generic_ping.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&display=swap" />
+  </head>
+  <body>
+    <!-- The overlay renderer draws here, in page coordinates, above everything else. -->
+    <div id="fx" aria-hidden="true">
+      <div id="pings"></div>
+      <svg id="wheel" viewBox="-300 -300 600 600"></svg>
+      <div id="cursor" class="fake-cursor">
+        <svg viewBox="0 0 20 28" width="20" height="28">
+          <path d="M1.5 1.5v21.2l5.1-4.9 3.4 7.9 3.6-1.5-3.3-7.7h7.1z" fill="#fff" stroke="#000" stroke-width="1.4" stroke-linejoin="round" />
+        </svg>
+      </div>
+    </div>
+    <div id="toasts" hidden></div>
+
+    <header class="top">
+      <a class="brand" href="./"><img src="./textures/generic_ping.png" alt="" width="28" height="28" />lolPing</a>
+      <a class="top-link" href="https://github.com/darrenprx/lolPing">GitHub</a>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="intro">
+          <h1>League pings for your whole desktop</h1>
+          <div class="pitch">
+            <p class="lede">
+              Hold Alt, drag, and let go on a ping. lolPing pops the animation and plays the sound from the Rift on
+              top of any app, on any monitor. Friends watching your screen share see it too.
+            </p>
+            <div class="cta">
+              <a class="btn primary" href="https://github.com/darrenprx/lolPing/releases/latest">Download for Windows</a>
+              <a class="btn quiet" href="https://github.com/darrenprx/lolPing">Source on GitHub</a>
+            </div>
+            <p class="fine">Version <span data-version>0.1.0</span> for Windows 11, 64-bit. Free and open source.</p>
+          </div>
+        </div>
+
+        <figure class="demo">
+          <div id="stage" class="stage" role="img" aria-label="A mock Windows desktop. Drag on it to open the ping wheel.">
+            <div class="share-pill"><i></i><span data-zh="你正在共享屏幕">You’re sharing your screen</span></div>
+            <div class="win editor">
+              <div class="bar"><span>build-notes.md<span class="nr" data-zh=" (未响应)"> (Not Responding)</span></span><span class="caps">–&ensp;▢&ensp;✕</span></div>
+              <div class="body">
+                <p><b class="k" style="--w: 14%"></b><b style="--w: 38%"></b></p>
+                <p><b class="s" style="--w: 52%"></b></p>
+                <p></p>
+                <p><b class="k" style="--w: 10%"></b><b style="--w: 22%"></b><b class="n" style="--w: 8%"></b></p>
+                <p class="in"><b style="--w: 44%"></b></p>
+                <p class="in"><b class="s" style="--w: 30%"></b><b style="--w: 18%"></b></p>
+                <p class="in"><b class="k" style="--w: 12%"></b><b style="--w: 34%"></b></p>
+                <p><b style="--w: 6%"></b></p>
+                <p></p>
+                <p><b class="c" style="--w: 46%"></b></p>
+                <p><b class="k" style="--w: 16%"></b><b style="--w: 26%"></b></p>
+              </div>
+            </div>
+            <div class="win chat">
+              <div class="bar"><span data-zh="双排开黑">Duo queue</span><span class="caps">–&ensp;▢&ensp;✕</span></div>
+              <div class="body scene-default">
+                <p class="them">you seeing this?</p>
+                <p class="me">look where I pinged</p>
+                <p class="them">wait, that’s the Rift ping</p>
+                <p class="me">on my actual desktop</p>
+              </div>
+              <div class="body scene-hung">
+                <p class="them" data-zh="又卡死了？">did it freeze again?</p>
+                <p class="me" data-zh="对，人直接没了">yep, it’s gone missing</p>
+                <p class="them" data-zh="给它标个信号哈哈">ping it lol</p>
+              </div>
+            </div>
+            <!-- The README capture's scene (?capture=hung): a frozen app asking to wait or end it. -->
+            <div class="hung">
+              <div class="bar"><span data-zh="编辑器">Editor</span><span class="caps">✕</span></div>
+              <div class="hung-body">
+                <b data-zh="编辑器 未响应">Editor isn’t responding</b>
+                <p data-zh="你可以等待它响应，或者立即结束它。如果结束，可能会丢失未保存的更改。">You can wait for it to respond or end it now. If you end it, you might lose unsaved changes.</p>
+                <div class="hung-btns"><span data-zh="结束任务">End task</span><span class="primary" data-zh="等待">Wait</span></div>
+              </div>
+            </div>
+            <p class="hint">Drag anywhere on this desktop</p>
+            <div class="taskbar">
+              <span class="apps"><i></i><i></i><i></i><i></i><i></i></span>
+              <span class="tray"><img src="./textures/generic_ping.png" alt="" width="16" height="16" /><span>21:47</span></span>
+            </div>
+          </div>
+          <figcaption>
+            <span class="how">
+              Drag on the desktop above and let go on a ping. A plain click drops a quick ping.
+              <span class="alt-tip">Outside it, hold Alt and drag anywhere on this page, like you would in Windows.</span>
+            </span>
+            <button id="sound" class="toggle" type="button" aria-pressed="true">Sound on</button>
+          </figcaption>
+        </figure>
+      </section>
+
+      <section class="pings" aria-labelledby="pings-h">
+        <h2 id="pings-h">Eight pings, same as the Rift</h2>
+        <p class="sub">
+          The wheel follows League’s order, starting at the top and going clockwise. Select one to see its animation.
+        </p>
+        <ul id="legend" class="legend"></ul>
+        <p class="sub">
+          Alt + click can also drop a basic ping. It’s off by default so ordinary Alt + click shortcuts keep working.
+        </p>
+      </section>
+
+      <section class="features" aria-labelledby="features-h">
+        <h2 id="features-h">Made for the desktop</h2>
+        <dl>
+          <div>
+            <dt>Every app, every monitor</dt>
+            <dd>
+              The wheel opens under your cursor over browsers, editors, chat apps and the desktop itself, on every
+              screen, at every display scale.
+            </dd>
+          </div>
+          <div>
+            <dt>Shows up when you share</dt>
+            <dd>
+              Pings are drawn in a real window, so whole-screen capture in Discord, OBS and screenshot tools records
+              them.
+            </dd>
+          </div>
+          <div>
+            <dt>Your trigger, your shortcut</dt>
+            <dd>
+              Alt by default. Switch to Ctrl, Shift, Win, Caps Lock, a side mouse button or any other key, and pick
+              the shortcut that turns pinging off and on.
+            </dd>
+          </div>
+          <div>
+            <dt>Out of the way</dt>
+            <dd>
+              A normal Alt + click still reaches the app under it. Ctrl + Alt + P pauses pinging, and the tray icon
+              shows whether it’s on.
+            </dd>
+          </div>
+          <div>
+            <dt>The look and sound you know</dt>
+            <dd>The icons, animations and sounds follow League’s ping wheel, All In clash included.</dd>
+          </div>
+          <div>
+            <dt>Small and offline</dt>
+            <dd>No account and no telemetry. Settings live in a small file, and it can start with Windows.</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="install" aria-labelledby="install-h">
+        <h2 id="install-h">Install</h2>
+        <ol>
+          <li>
+            Download <b>lolPing-Setup-<span data-version>0.1.0</span>.exe</b> from the
+            <a href="https://github.com/darrenprx/lolPing/releases/latest">latest release</a>.
+          </li>
+          <li>
+            Run it. The installer isn’t code-signed, so Windows SmartScreen may stop it: select <b>More info</b>,
+            then <b>Run anyway</b>.
+          </li>
+          <li>lolPing opens its settings and moves to the tray. Hold Alt and drag anywhere to ping.</li>
+        </ol>
+      </section>
+
+      <section class="faq" aria-labelledby="faq-h">
+        <h2 id="faq-h">Questions</h2>
+        <details>
+          <summary>Does it work inside League?</summary>
+          <p>
+            lolPing is a desktop overlay. It doesn’t read, change or hook into the game. Use the game’s own pings in a
+            match; exclusive-fullscreen games draw over the overlay anyway.
+          </p>
+        </details>
+        <details>
+          <summary>Why does Windows or my antivirus warn about it?</summary>
+          <p>
+            The installer isn’t signed with a paid certificate, and lolPing watches the mouse and keyboard to catch
+            Alt + drag, using the same low-level hook that hotkey tools use. All of the source is on GitHub if you’d
+            rather build it yourself.
+          </p>
+        </details>
+        <details>
+          <summary>My friends can’t see the pings on Discord.</summary>
+          <p>
+            Share your entire screen instead of a single window. Window capture records only that window, and pings
+            live in their own overlay window.
+          </p>
+        </details>
+        <details>
+          <summary>Alt + drag does nothing over some windows.</summary>
+          <p>
+            Windows hides input aimed at programs running as administrator, such as Task Manager, from normal apps.
+            Over those windows the wheel won’t open.
+          </p>
+        </details>
+        <details>
+          <summary>How do I pause, quit or uninstall it?</summary>
+          <p>
+            Ctrl + Alt + P pauses and resumes pinging. Right-click the tray icon to quit. To remove it, open Windows
+            Settings, then Apps, then Installed apps.
+          </p>
+        </details>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <p>
+        Made by <a href="https://github.com/darrenprx">Danrui Meng</a>. Code released under the
+        <a href="https://github.com/darrenprx/lolPing/blob/main/LICENSE">MIT license</a>. Ping icons and sounds © Riot
+        Games.
+      </p>
+      <p class="legal">
+        lolPing isn’t endorsed by Riot Games and doesn’t reflect the views or opinions of Riot Games or anyone
+        officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties
+        are trademarks or registered trademarks of Riot Games, Inc.
+      </p>
+    </footer>
+
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

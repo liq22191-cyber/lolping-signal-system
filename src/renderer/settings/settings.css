@@ -1,0 +1,100 @@
+:root { --card: rgba(255,255,255,.05); --card-hover: rgba(255,255,255,.08); --stroke: rgba(255,255,255,.07); --text3: rgba(255,255,255,.55); --nav-sel: rgba(255,255,255,.06); }
+@media (prefers-color-scheme: light) {
+  :root { --card: rgba(255,255,255,.7); --card-hover: rgba(249,249,249,.9); --stroke: rgba(0,0,0,.06); --text3: rgba(0,0,0,.5); --nav-sel: rgba(0,0,0,.04); }
+}
+html, body, #root { margin: 0; height: 100%; background: transparent; }
+body { font-family: "Segoe UI Variable Text", "Segoe UI", sans-serif; overflow: hidden; }
+.app { display: grid; grid-template-rows: 40px 1fr; grid-template-columns: 240px 1fr; height: 100%; }
+.titlebar { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; padding-left: 16px; font-size: 12px; -webkit-app-region: drag; }
+.titlebar img { width: 16px; height: 16px; }
+nav.side { padding: 4px 8px; display: flex; flex-direction: column; gap: 3px; }
+.brand { display: flex; align-items: center; gap: 12px; padding: 8px 10px 16px; }
+.brand img { width: 40px; height: 40px; }
+.brand b { display: block; font-size: 16px; }
+.navItem { position: relative; display: flex; align-items: center; gap: 14px; height: 36px; padding: 0 12px; border-radius: 4px; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: default; }
+.navItem:hover, .navItem.sel { background: var(--nav-sel); }
+.navItem.sel::before { content: ""; position: absolute; left: 0; top: 10px; width: 3px; height: 16px; border-radius: 2px; background: var(--colorBrandForeground1); }
+main.content { overflow: auto; padding: 4px 28px 28px 20px; }
+.pageTitle { font: 600 28px/36px "Segoe UI Variable Display", "Segoe UI"; margin: 6px 0 18px; }
+.section { margin: 22px 0 8px; font-weight: 600; font-size: 14px; }
+.card { display: flex; align-items: center; gap: 16px; min-height: 68px; padding: 12px 20px; border-radius: 4px; margin-bottom: 3px; box-sizing: border-box; background: var(--card); border: 1px solid var(--stroke); }
+.card:hover { background: var(--card-hover); }
+.card.dim { opacity: .45; pointer-events: none; }
+.card .icon { display: flex; width: 24px; }
+.card .lbl { flex: 1; min-width: 0; }
+.card.notes .lbl { display: flex; flex-direction: column; gap: 4px; padding: 6px 0; }
+.desc { display: block; color: var(--text3); font-size: 12px; line-height: 16px; }
+.desc.inline { display: inline; margin-left: 6px; }
+.card .ctl { display: flex; align-items: center; gap: 10px; }
+.value { min-width: 56px; text-align: right; font-variant-numeric: tabular-nums; }
+/* Fluent draws a tick per step on the rail; with 38-100 steps they merge into a dark dashed line. */
+.card .fui-Slider__rail::before { background-image: none; }
+.status { min-height: 76px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: #6ccb5f; box-shadow: 0 0 8px #6ccb5f; }
+.dot.off { background: var(--text3); box-shadow: none; }
+.dot.failed { background: #ff9c48; box-shadow: 0 0 8px #ff9c48; }
+/* Wheel editor: League-coloured wheel in both themes; tiles follow the Fluent controls. */
+.card.wheelEditor { display: block; padding: 16px 20px 12px; }
+.card.wheelEditor:hover { background: var(--card); }
+.weHead { display: flex; align-items: flex-start; gap: 16px; }
+.weHead .lbl { flex: 1; }
+.weBody { display: grid; grid-template-columns: 300px 1fr; gap: 24px; align-items: center; margin-top: 14px; }
+.weWheel { position: relative; }
+.weWheel svg { position: absolute; inset: 0; }
+.weWedge { fill: rgba(10,14,22,.78); stroke: rgba(200,170,110,.35); stroke-width: 1; transition: fill .12s; }
+.weWedge.hot { fill: rgba(60,120,170,.55); }
+.weSlot { position: absolute; width: 56px; height: 56px; margin: -28px 0 0 -28px; display: grid; place-items: center; border-radius: 50%; cursor: grab; }
+.weSlot img { width: 46px; height: 46px; pointer-events: none; transition: transform .12s; filter: drop-shadow(0 2px 3px rgba(0,0,0,.5)); }
+.weSlot:hover img, .weSlot.hot img { transform: scale(1.15); }
+.weCenter { position: absolute; left: 50%; top: 50%; width: 92px; height: 92px; margin: -46px 0 0 -46px; border-radius: 50%; display: grid; place-items: center; align-content: center;
+  background: radial-gradient(circle, rgba(20,26,38,.95), rgba(10,14,22,.9)); border: 1px solid rgba(200,170,110,.35); cursor: grab; transition: box-shadow .12s; }
+.weCenter img { width: 40px; height: 40px; pointer-events: none; }
+.weCenter span { font-size: 10px; font-weight: 600; letter-spacing: .08em; color: #1fa9e0; pointer-events: none; }
+.weCenter.hot { box-shadow: 0 0 0 3px var(--colorBrandStroke1); }
+.weCenter.off { opacity: .45; }
+.weSlot.picked, .weCenter.picked { outline: 2px dashed var(--colorBrandStroke1); outline-offset: 2px; }
+.weSlot:focus-visible, .weCenter:focus-visible, .weTile:focus-visible { outline: 2px solid var(--colorStrokeFocus2); }
+.wePoolTitle { font-size: 12px; font-weight: 600; }
+.weTiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 6px; margin-top: 10px; }
+.weTile { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 2px 6px; border-radius: 6px; font-size: 11px; line-height: 14px; text-align: center;
+  user-select: none; cursor: grab; background: var(--colorNeutralBackground1); border: 1px solid var(--colorNeutralStroke1); color: var(--colorNeutralForeground2); }
+.weTile:hover { background: var(--colorNeutralBackground1Hover); }
+.weTile:active { transform: scale(.97); }
+.weTile.picked { outline: 2px solid var(--colorBrandStroke1); outline-offset: -1px; }
+.weTile img { width: 34px; height: 34px; pointer-events: none; }
+.weNew { position: absolute; top: 3px; left: 4px; font-size: 9px; font-weight: 600; color: var(--colorBrandForeground1); }
+.weWhere { position: absolute; top: 3px; right: 4px; font-size: 10px; color: var(--text3); }
+.weHint { min-height: 16px; margin-top: 10px; font-size: 12px; line-height: 16px; color: var(--text3); }
+@media (max-width: 860px) { .weBody { grid-template-columns: 1fr; justify-items: center; } }
+.keys { display: flex; align-items: center; gap: 4px; }
+.keys kbd { font: 600 12px "Segoe UI"; padding: 3px 8px; border-radius: 4px; background: var(--colorBrandBackground); color: var(--colorNeutralForegroundOnBrand); }
+@media (max-width: 760px) { .app { grid-template-columns: 1fr; } nav.side { display: none; } }
+.statusPing { display: none; }
+.card.permission { align-items: flex-start; border-color: #ff9c48; }
+.card.permission .icon { padding-top: 14px; color: #ff9c48; }
+.card.permission .lbl { padding: 12px 0; }
+.card.permission ol { margin: 6px 0 12px; padding-left: 18px; }
+.card.permission .actions { display: flex; gap: 8px; }
+/* Room */
+.swatches { display: flex; gap: 6px; }
+.swatch { width: 22px; height: 22px; padding: 0; border-radius: 50%; border: 2px solid transparent; outline-offset: 1px; cursor: pointer; }
+.swatch.sel { border-color: var(--colorNeutralForeground1); }
+.swatch:focus-visible { outline: 2px solid var(--colorStrokeFocus2); }
+.card.roomJoin { flex-wrap: wrap; }
+.card.roomJoin .lbl { min-width: 220px; }
+.card.roomJoin .desc + .desc { margin-top: 4px; }
+.roomError { flex-basis: 100%; padding-left: 40px; font-size: 12px; color: #ff9c48; }
+.roomCode { font: 600 20px/28px "Cascadia Mono", Consolas, "SF Mono", monospace; letter-spacing: 1px; user-select: text; }
+.card.members { display: block; padding: 6px 20px; }
+.card.members:hover { background: var(--card); }
+.member { display: flex; align-items: center; gap: 10px; min-height: 40px; border-bottom: 1px solid var(--stroke); }
+.member:last-of-type { border-bottom: 0; }
+.tagDot { flex: none; width: 10px; height: 10px; border-radius: 50%; }
+.memberName { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.warnText { color: #ff9c48; }
+.badge { flex: none; font-size: 11px; line-height: 18px; padding: 0 7px; border-radius: 9px; border: 1px solid var(--colorNeutralStroke1); color: var(--text3); white-space: nowrap; }
+.badge.lan, .badge.internet { color: #4caf50; border-color: rgba(76, 175, 80, .5); }
+.badge.unreachable, .badge.bad { color: #ff9c48; border-color: #ff9c48; }
+.roomWaiting { padding: 8px 0 10px 20px; }
+.displays { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; font-size: 12px; color: var(--text3); font-variant-numeric: tabular-nums; }
+.roomNote { margin: 8px 2px 0; }

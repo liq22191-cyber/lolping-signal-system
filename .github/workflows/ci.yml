@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      # Builds hook-helper.exe and runs the C++ tests. The TypeScript tests need the built helper.
+      - run: npm run test:helper
+      - run: npm test
+      - run: npm run build
+      - run: npm run build:site
+
+  test-mac:
+    runs-on: macos-latest # Apple Silicon
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      # Builds the macOS hook-helper (event tap included) and runs the C++ tests.
+      - run: npm run test:helper
+      - run: npm test
+      - run: npm run dist:mac
+        env:
+          # electron-builder skips signing on pull requests. The ad-hoc signature needs no secrets, and an unsigned
+          # arm64 app won't launch, so sign here too.
+          CSC_FOR_PULL_REQUEST: true
+      - name: Check the app bundle
+        run: |
+          app="release/mac-arm64/lolPing.app"
+          codesign --verify --deep --strict --verbose=2 "$app"
+          file "$app/Contents/Resources/hook-helper" | grep -q arm64
+          test -f "$app/Contents/Resources/trayTemplate@2x.png"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lolPing-mac-arm64
+          path: release/*.dmg
+          retention-days: 14

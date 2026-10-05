@@ -1,0 +1,78 @@
+{
+  "name": "lolping",
+  "productName": "lolPing",
+  "version": "0.3.0",
+  "private": true,
+  "description": "League of Legends style ping wheel for your Windows and macOS desktop",
+  "author": "Danrui Meng (https://github.com/darrenprx)",
+  "license": "MIT",
+  "homepage": "https://github.com/darrenprx/lolPing#readme",
+  "repository": { "type": "git", "url": "https://github.com/darrenprx/lolPing.git" },
+  "bugs": "https://github.com/darrenprx/lolPing/issues",
+  "main": "out/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "start": "electron-vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "build:helper": "node native/hook-helper/run.mjs build",
+    "test:helper": "node native/hook-helper/run.mjs test",
+    "dist": "npm run build:helper && electron-vite build && electron-builder --win --publish never",
+    "dist:mac": "npm run build:helper && electron-vite build && electron-builder --mac --arm64 --publish never",
+    "dev:site": "vite --config site/vite.config.ts",
+    "build:site": "vite build --config site/vite.config.ts",
+    "media": "npm run build:site && electron tools/capture-media/capture.mjs"
+  },
+  "devDependencies": {
+    "@fluentui/react-components": "9.74.9",
+    "@fluentui/react-icons": "2.0.343",
+    "@types/node": "22.20.4",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "5.2.0",
+    "electron": "44.5.1",
+    "electron-builder": "26.15.3",
+    "electron-vite": "5.0.0",
+    "esbuild": "0.25.12",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "typescript": "5.9.3",
+    "vite": "7.3.6",
+    "vitest": "5.0.3"
+  },
+  "build": {
+    "appId": "com.lolping.app",
+    "productName": "lolPing",
+    "directories": { "output": "release", "buildResources": "build" },
+    "files": ["out/**/*", "package.json"],
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "icon": "build/icon.ico",
+      "extraResources": [{ "from": "native/hook-helper/build/hook-helper.exe", "to": "hook-helper.exe" }]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "lolPing-Setup-${version}.exe",
+      "include": "build/installer.nsh"
+    },
+    "mac": {
+      "target": [{ "target": "dmg", "arch": ["arm64"] }],
+      "icon": "build/icon.png",
+      "category": "public.app-category.utilities",
+      "identity": "-",
+      "hardenedRuntime": false,
+      "extraResources": [
+        { "from": "native/hook-helper/build/hook-helper", "to": "hook-helper" },
+        { "from": "build", "to": ".", "filter": ["tray*Template*.png"] }
+      ],
+      "extendInfo": {
+        "NSAccessibilityUsageDescription": "lolPing reads the mouse and keyboard to open the ping wheel when you hold the trigger key and drag.",
+        "NSLocalNetworkUsageDescription": "lolPing finds the other people in your room on the local network and sends them your pings."
+      }
+    },
+    "dmg": { "artifactName": "lolPing-${version}-arm64.dmg" }
+  }
+}

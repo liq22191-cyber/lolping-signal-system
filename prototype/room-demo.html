@@ -1,0 +1,117 @@
+<!doctype html>
+<!-- THROWAWAY PROTOTYPE: layout of the settings window's Room section (Fluent 2 styling by hand). Not app code. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>lolPing Room Demo</title>
+<style>
+  :root {
+    --bg: #202020; --card: rgba(255,255,255,.05); --stroke: rgba(255,255,255,.07); --text: #fff; --text3: rgba(255,255,255,.55);
+    --accent: #60cdff; --accent-text: #000; --ctrl: rgba(255,255,255,.06); --ctrl-stroke: rgba(255,255,255,.09); --warn: #ff9c48;
+  }
+  @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) {
+    --bg: #f3f3f3; --card: rgba(255,255,255,.7); --stroke: rgba(0,0,0,.06); --text: #1a1a1a; --text3: rgba(0,0,0,.5);
+    --accent: #005fb8; --accent-text: #fff; --ctrl: rgba(255,255,255,.7); --ctrl-stroke: rgba(0,0,0,.1); --warn: #c25e00; } }
+  :root[data-theme="light"] {
+    --bg: #f3f3f3; --card: rgba(255,255,255,.7); --stroke: rgba(0,0,0,.06); --text: #1a1a1a; --text3: rgba(0,0,0,.5);
+    --accent: #005fb8; --accent-text: #fff; --ctrl: rgba(255,255,255,.7); --ctrl-stroke: rgba(0,0,0,.1); --warn: #c25e00; }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 16px; font: 14px/20px "Segoe UI Variable Text", "Segoe UI", sans-serif; color: var(--text); background: var(--bg); }
+  main { max-width: 760px; margin: 0 auto; }
+  h2 { font: 600 14px "Segoe UI"; margin: 22px 0 8px; }
+  .bar { display: flex; gap: 8px; flex-wrap: wrap; }
+  .card { display: flex; align-items: center; gap: 16px; min-height: 68px; padding: 12px 20px; border-radius: 4px; margin-bottom: 3px; background: var(--card); border: 1px solid var(--stroke); flex-wrap: wrap; }
+  .card.warn { border-color: var(--warn); }
+  .lbl { flex: 1; min-width: 200px; } .desc { display: block; color: var(--text3); font-size: 12px; line-height: 16px; }
+  .ctl { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  button { font: inherit; padding: 5px 12px; border-radius: 4px; border: 1px solid var(--ctrl-stroke); background: var(--ctrl); color: var(--text); }
+  button.primary { background: var(--accent); color: var(--accent-text); border-color: transparent; }
+  input { font: inherit; padding: 5px 10px; border-radius: 4px; border: 1px solid var(--ctrl-stroke); background: var(--ctrl); color: var(--text); width: 190px; }
+  .err { color: var(--warn); font-size: 12px; }
+  .swatches { display: flex; gap: 6px; }
+  .sw { width: 22px; height: 22px; border-radius: 50%; border: 2px solid transparent; }
+  .sw.sel { border-color: var(--text); }
+  .code { font: 600 22px/28px "Cascadia Mono", Consolas, monospace; letter-spacing: 1px; }
+  .members { display: block; padding: 8px 20px; }
+  .member { display: flex; align-items: center; gap: 10px; min-height: 40px; border-bottom: 1px solid var(--stroke); }
+  .member:last-child { border-bottom: 0; }
+  .member .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dotc { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+  .badge { font-size: 11px; padding: 0 6px; border-radius: 10px; border: 1px solid var(--ctrl-stroke); color: var(--text3); white-space: nowrap; }
+  .badge.lan { color: #6ccb5f; border-color: #6ccb5f66; } .badge.bad { color: var(--warn); border-color: var(--warn); }
+  .you { color: var(--text3); font-size: 12px; }
+  .note { color: var(--text3); font-size: 12px; line-height: 16px; margin: 10px 2px; }
+  .demo { margin-bottom: 12px; padding: 8px; border: 1px dashed var(--ctrl-stroke); border-radius: 6px; font-size: 12px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="demo bar">
+    <button onclick="show('out')">Not in a room</button>
+    <button onclick="show('in')">In a room</button>
+    <button onclick="show('alone')">Alone</button>
+    <button onclick="show('lanbad')">LAN unavailable</button>
+    <button onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light'">Theme</button>
+  </div>
+
+  <h2>Room</h2>
+  <div class="card">
+    <div class="lbl">Your name<span class="desc">Shown under your pings on other people’s screens</span></div>
+    <div class="ctl"><input value="Darren" maxlength="16"></div>
+  </div>
+  <div class="card">
+    <div class="lbl">Tag colour</div>
+    <div class="ctl swatches" id="sw"></div>
+  </div>
+
+  <div id="out">
+    <div class="card">
+      <div class="lbl">Join a room<span class="desc">Paste the code a friend sent you, or create a room and share yours. Windows may ask to allow lolPing on your network: allow it, and make sure your Wi‑Fi is set to Private.</span></div>
+      <div class="ctl"><input placeholder="PING-XXXXX-XXXXX" value="PING-7KQ4M-2HXTR"><button class="primary">Join</button><button>Create room</button></div>
+      <div class="err" style="flex-basis:100%">This code looks mistyped.</div>
+    </div>
+  </div>
+
+  <div id="in" hidden>
+    <div class="card">
+      <div class="lbl"><span class="code">PING-7KQ4M-2HXTR</span><span class="desc">Share this code with friends</span></div>
+      <div class="ctl"><button>Copy code</button><button>Leave room</button></div>
+    </div>
+    <div class="card warn" id="lanbad" hidden>
+      <div class="lbl">LAN unavailable<span class="desc">Another app may be using UDP port 47474, or the firewall blocks lolPing.</span></div>
+    </div>
+    <div class="card members" id="list"></div>
+  </div>
+
+  <h2>Room options</h2>
+  <div class="card"><div class="lbl">Mute room<span class="desc">Keep pinging, but hide everyone else’s pings</span></div><div class="ctl"><button>Off</button></div></div>
+  <div class="card"><div class="lbl">Incoming ping limit<span class="desc">Per person. Unlimited lets friends spam you</span></div><div class="ctl"><input type="range" min="1" max="21" value="5" style="width:200px"><span>5 / s</span></div></div>
+  <div class="card"><div class="lbl">Rejoin last room on launch</div><div class="ctl"><button>On</button></div></div>
+  <div class="card"><div class="lbl">Displays<span class="desc">A ping lands on the display with the same number, or #1</span></div><div class="ctl"><span class="desc">#1 Primary · 2560×1440 &nbsp; #2 · 1920×1080</span></div></div>
+  <p class="note">Room members can see your IP address. Pings travel encrypted, directly between devices.</p>
+</main>
+<script>
+  const COLORS = ['#4fc3f7', '#ff8a65', '#aed581', '#ba68c8', '#ffd54f', '#4db6ac', '#f06292', '#e0e0e0'];
+  document.getElementById('sw').innerHTML = COLORS.map((c, i) => `<span class="sw${i === 3 ? ' sel' : ''}" style="background:${c}"></span>`).join('');
+  const people = [
+    ['Darren', 3, 'you'], ['Alex', 0, 'LAN'], ['Mia', 6, 'LAN', 'paused'], ['Sam', 2, 'Connecting…', 'needs update'], ['Very long name here', 1, 'LAN', 'muted'],
+  ];
+  function list(alone) {
+    const rows = (alone ? people.slice(0, 1) : people).map(([n, c, path, extra]) => `<div class="member"><span class="dotc" style="background:${COLORS[c]}"></span>
+      <span class="name">${n}${path === 'you' ? ' <span class="you">(you)</span>' : ''}</span>
+      ${path === 'you' ? '' : `<span class="badge ${path === 'LAN' ? 'lan' : ''}">${path}</span>`}
+      ${extra ? `<span class="badge ${extra === 'needs update' ? 'bad' : ''}">${extra}</span>` : ''}
+      ${path === 'you' ? '' : '<button>Mute</button>'}</div>`).join('');
+    return rows + (alone ? '<div class="note">Waiting for others… Nobody here yet. Check that your friends typed the same code.</div>' : '');
+  }
+  function show(which) {
+    document.getElementById('out').hidden = which !== 'out';
+    document.getElementById('in').hidden = which === 'out';
+    document.getElementById('lanbad').hidden = which !== 'lanbad';
+    document.getElementById('list').innerHTML = list(which === 'alone');
+  }
+  show('out');
+</script>
+</body>
+</html>

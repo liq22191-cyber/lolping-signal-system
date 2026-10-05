@@ -1,0 +1,87 @@
+/* macOS look (html[data-platform="mac"]): System Settings-style grouped rows on a vibrancy sidebar window. */
+[data-platform="mac"] {
+  --mac-content: #f5f5f7; --mac-row: #ffffff; --mac-sep: rgba(0,0,0,.1); --mac-sub: #6e6e73; --mac-track: #e3e3e8;
+  --mac-sel: rgba(0,0,0,.06); --mac-warn: #ff9f0a;
+}
+@media (prefers-color-scheme: dark) {
+  [data-platform="mac"] {
+    --mac-content: #1e1e20; --mac-row: #2a2a2d; --mac-sep: rgba(255,255,255,.09); --mac-sub: #98989d; --mac-track: #3a3a3d;
+    --mac-sel: rgba(255,255,255,.1);
+  }
+}
+[data-platform="mac"] body { font: 13px/1.35 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif; -webkit-font-smoothing: antialiased; }
+[data-platform="mac"] .desc { color: var(--mac-sub); font-size: 11.5px; line-height: 15px; margin-top: 2px; }
+
+/* window: the sidebar shows the vibrancy, the content column is opaque; traffic lights sit at the top left */
+[data-platform="mac"] .app { position: relative; grid-template-rows: 1fr; grid-template-columns: 210px 1fr; }
+[data-platform="mac"] .titlebar {
+  position: absolute; z-index: 2; top: 0; left: 210px; right: 0; height: 52px; padding: 0 22px;
+  font: 600 15px -apple-system, BlinkMacSystemFont, sans-serif; background: var(--mac-content); border-bottom: .5px solid var(--mac-sep);
+}
+[data-platform="mac"] .titlebar img { display: none; }
+[data-platform="mac"] nav.side { padding: 52px 10px 10px; gap: 2px; border-right: .5px solid var(--mac-sep); -webkit-app-region: drag; }
+[data-platform="mac"] nav.side > * { -webkit-app-region: no-drag; }
+[data-platform="mac"] .brand { padding: 4px 8px 14px; gap: 10px; }
+[data-platform="mac"] .brand img { width: 32px; height: 32px; }
+[data-platform="mac"] .brand b { font-size: 14px; }
+[data-platform="mac"] .navItem { height: 28px; gap: 8px; padding: 0 8px; border-radius: 7px; }
+[data-platform="mac"] .navItem:hover { background: transparent; }
+[data-platform="mac"] .navItem.sel { background: var(--colorBrandBackground); color: #fff; }
+[data-platform="mac"] .navItem.sel::before { display: none; }
+[data-platform="mac"] .navItem svg { width: 20px; height: 20px; padding: 2px; box-sizing: border-box; border-radius: 5px; color: #fff; background: #8e8e93; }
+[data-platform="mac"] .navItem:nth-of-type(1) svg { background: #007aff; }
+[data-platform="mac"] .navItem:nth-of-type(2) svg { background: #8e8e93; }
+[data-platform="mac"] .navItem:nth-of-type(3) svg { background: #ff2d55; }
+[data-platform="mac"] .navItem:nth-of-type(4) svg { background: #34c759; }
+[data-platform="mac"] .navItem:nth-of-type(5) svg { background: #5856d6; }
+[data-platform="mac"] main.content { margin-top: 52px; padding: 18px 22px 40px; background: var(--mac-content); }
+[data-platform="mac"] main.content > * { max-width: 640px; margin-left: auto; margin-right: auto; }
+[data-platform="mac"] .pageTitle { display: none; }
+[data-platform="mac"] .section { margin: 22px auto 7px; padding: 0 8px; font-size: 13px; font-weight: 600; }
+
+/* grouped inset rows: consecutive cards form one rounded group with separators */
+[data-platform="mac"] .card {
+  min-height: 44px; padding: 9px 14px; margin: 0 auto; gap: 12px; border: 0; border-radius: 0;
+  background: var(--mac-row); box-shadow: 0 0 0 .5px var(--mac-sep);
+}
+[data-platform="mac"] .card:hover { background: var(--mac-row); }
+[data-platform="mac"] .card + .card { border-top: .5px solid var(--mac-sep); }
+[data-platform="mac"] .card:first-child, [data-platform="mac"] .pageTitle + .card, [data-platform="mac"] .section + .card,
+[data-platform="mac"] .permission + .card { border-top-left-radius: 10px; border-top-right-radius: 10px; border-top: 0; }
+[data-platform="mac"] .card:last-child, [data-platform="mac"] .card:has(+ .section),
+[data-platform="mac"] .card.status { border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; }
+[data-platform="mac"] .card .icon { display: none; }
+[data-platform="mac"] .card.notes .lbl { padding: 2px 0; }
+
+/* status: the ping icon and a larger title, as its own group */
+[data-platform="mac"] .card.status { padding: 16px; gap: 14px; margin-bottom: 4px; border-radius: 10px; }
+[data-platform="mac"] .card.status .dot { display: none; }
+[data-platform="mac"] .statusPing { display: block; width: 50px; height: 50px; filter: drop-shadow(0 4px 8px rgba(0,122,255,.35)); }
+[data-platform="mac"] .card.status b { font-size: 17px !important; font-weight: 600; }
+
+/* Accessibility card: its own amber group */
+[data-platform="mac"] .card.permission {
+  border-radius: 10px; margin-bottom: 14px; padding: 4px 14px;
+  background: color-mix(in srgb, var(--mac-warn) 14%, var(--mac-row));
+  box-shadow: 0 0 0 .5px color-mix(in srgb, var(--mac-warn) 50%, transparent);
+}
+[data-platform="mac"] .card.permission .icon { display: flex; color: var(--mac-warn); }
+
+/* iOS-style switches without the On/Off text */
+[data-platform="mac"] .fui-Switch__label { display: none; }
+[data-platform="mac"] .fui-Switch__indicator {
+  width: 38px !important; height: 22px !important; margin: 0 !important; border-radius: 11px !important; border: 0 !important;
+  background: var(--mac-track) !important; color: #fff !important; font-size: 20px !important;
+}
+[data-platform="mac"] .fui-Switch__indicator svg { filter: drop-shadow(0 1px 1.5px rgba(0,0,0,.35)); }
+[data-platform="mac"] .fui-Switch__input:checked ~ .fui-Switch__indicator { background: #34c759 !important; }
+
+/* keycaps and the wheel editor */
+[data-platform="mac"] .keys kbd {
+  font: 500 12px -apple-system, BlinkMacSystemFont, sans-serif; min-width: 14px; text-align: center; padding: 3px 7px; border-radius: 5px;
+  background: var(--mac-sel); color: inherit; box-shadow: inset 0 -1px 0 var(--mac-sep);
+}
+[data-platform="mac"] .card.wheelEditor { padding: 14px 14px 10px; }
+[data-platform="mac"] .weTile { border: 0; background: transparent; color: var(--mac-sub); font-size: 11.5px; }
+[data-platform="mac"] .weTile:hover { background: var(--mac-sel); }
+@media (max-width: 760px) { [data-platform="mac"] .titlebar { left: 0; } }

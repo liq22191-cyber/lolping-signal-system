@@ -1,0 +1,211 @@
+<!doctype html>
+<!-- THROWAWAY PROTOTYPE: look-and-feel demo of the ping wheel + ping animations. Not app code. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ping Wheel Demo</title>
+<style>
+  :root { --gold: #c8aa6e; --gold-dim: #8a7448; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; user-select: none; font-family: "Segoe UI Variable", "Segoe UI", sans-serif; }
+  body {
+    background:
+      radial-gradient(1200px 700px at 20% 10%, #3a4a6b 0%, transparent 60%),
+      radial-gradient(900px 600px at 85% 80%, #5b3a5e 0%, transparent 60%),
+      linear-gradient(160deg, #1d2333, #11141d);
+    color: #e6e6e6;
+  }
+  /* fake desktop window so pings have something to sit on */
+  .fakewin { position: absolute; left: 8%; top: 12%; width: 46%; height: 62%; border-radius: 10px;
+    background: rgba(32,32,36,.92); box-shadow: 0 20px 60px rgba(0,0,0,.5); border: 1px solid rgba(255,255,255,.08); }
+  .fakewin .bar { height: 34px; border-bottom: 1px solid rgba(255,255,255,.06); display:flex; align-items:center; padding: 0 12px; font-size: 12px; opacity:.7 }
+  .fakewin .body { padding: 18px; font-size: 14px; line-height: 1.7; opacity: .75 }
+  .help { position: absolute; right: 24px; top: 24px; width: 330px; padding: 16px 18px; border-radius: 10px;
+    background: rgba(20,20,24,.85); border: 1px solid rgba(255,255,255,.08); font-size: 13px; line-height: 1.6; }
+  .help b { color: var(--gold); }
+  .help .btns { display:flex; flex-wrap: wrap; gap:6px; margin-top:10px }
+  .help button { background:#2b2b31; color:#ddd; border:1px solid #444; border-radius:6px; padding:4px 8px; font-size:12px; cursor:pointer }
+  .help button:hover { background:#3a3a42 }
+
+  /* ---------- wheel ---------- */
+  #wheel { position: absolute; width: 600px; height: 600px; margin: -300px 0 0 -300px; pointer-events: none;
+    opacity: 0; transform: scale(.85); transition: opacity .12s ease-out, transform .12s ease-out; }
+  #wheel.open { opacity: 1; transform: scale(1); }
+  #wheel .wedge { transition: fill-opacity .08s; }
+  #wheel .icon { transition: filter .1s, transform .1s; transform-box: fill-box; transform-origin: center;
+    filter: grayscale(1) sepia(.75) saturate(1.3) brightness(1.15); }
+  #wheel .icon.hot { filter: none; transform: scale(1.18); }
+  #wheel .centerTxt { font: 600 15px "Segoe UI", sans-serif; letter-spacing: 1px; fill: #1fa9e0; }
+  #wheel .backTxt { font: 600 9px "Segoe UI", sans-serif; fill: #6c7a7c; letter-spacing: .5px }
+
+  /* ---------- pings ---------- */
+  .ping { position: absolute; width: 0; height: 0; pointer-events: none; }
+  .ping .ground { position: absolute; left: -46px; top: 22px; width: 92px; height: 26px; border-radius: 50%;
+    background: radial-gradient(closest-side, var(--c), transparent); opacity: 0; animation: ground 3.2s ease-out forwards; }
+  .ping .ring { position: absolute; left: -60px; top: -60px; width: 120px; height: 120px; border-radius: 50%;
+    border: 3px solid var(--c); box-shadow: 0 0 18px var(--c), inset 0 0 12px var(--c); opacity: 0; animation: ring .65s ease-out forwards; }
+  .ping .ring.r2 { animation-delay: .22s; }
+  .ping .ring.r3 { animation-delay: 1.4s; }
+  .ping .art { position: absolute; left: -55px; top: -80px; width: 110px; height: 110px; animation: life 3.2s linear forwards; }
+  .ping .art img { position: absolute; inset: 0; width: 100%; height: 100%; filter: drop-shadow(0 0 10px var(--c)); }
+  .ping .pop { animation: pop .28s cubic-bezier(.2,1.6,.4,1) both, bob 1.6s ease-in-out .3s infinite; }
+  .ping .a1 { animation: slide1 .22s cubic-bezier(.5,0,.9,.5) both; }
+  .ping .a2 { animation: slide2 .22s cubic-bezier(.5,0,.9,.5) both; }
+  .ping .clash { animation: shake .25s linear .22s both, bob 1.6s ease-in-out .5s infinite; }
+  .ping .flash { position:absolute; left:-30px; top:-55px; width:60px; height:60px; border-radius:50%;
+    background: radial-gradient(closest-side, #fff, var(--c) 40%, transparent); opacity:0; animation: flash .35s ease-out .2s forwards; }
+
+  @keyframes pop { 0% { transform: scale(.4); opacity: 0 } 60% { transform: scale(1.15); opacity: 1 } 100% { transform: scale(1) } }
+  @keyframes bob { 0%,100% { translate: 0 0 } 50% { translate: 0 -5px } }
+  @keyframes ring { 0% { transform: scale(.25); opacity: .95 } 100% { transform: scale(1.35); opacity: 0 } }
+  @keyframes ground { 0% { opacity: 0 } 10% { opacity: .75 } 85% { opacity: .55 } 100% { opacity: 0 } }
+  @keyframes life { 0%, 87% { opacity: 1 } 100% { opacity: 0 } }
+  @keyframes slide1 { 0% { transform: translate(70px,-70px); opacity: 0 } 100% { transform: none; opacity: 1 } }
+  @keyframes slide2 { 0% { transform: translate(-70px,-70px); opacity: 0 } 100% { transform: none; opacity: 1 } }
+  @keyframes shake { 0%,100% { transform: none } 25% { transform: translate(-3px,2px) } 50% { transform: translate(3px,-2px) } 75% { transform: translate(-2px,-1px) } }
+  @keyframes flash { 0% { opacity: 0; transform: scale(.3) } 30% { opacity: 1 } 100% { opacity: 0; transform: scale(2.2) } }
+</style>
+</head>
+<body>
+<div class="fakewin"><div class="bar">Some App — pretend this is your desktop</div>
+  <div class="body">Pings live on a transparent overlay above every window.<br>Drag anywhere to open the wheel, release on a slice to ping.<br>A plain click stands in for Alt+click (generic ping) in this demo.</div></div>
+
+<div class="help">
+  <b>Throwaway demo</b> using your real textures &amp; sounds.<br>
+  • <b>Drag</b> (any mouse button-down + move) → wheel; release on a slice → ping<br>
+  • Release in the center / <b>right-click</b> / <b>Esc</b> → cancel<br>
+  • <b>Click</b> without dragging → generic ping (Alt+click when enabled)<br>
+  (In the real app this is Alt+drag; browsers steal Alt, so the demo skips it.)
+  <div class="btns" id="btns"></div>
+</div>
+
+<svg id="wheel" viewBox="-300 -300 600 600"></svg>
+
+<script>
+const T = '../assets/textures/', S = '../assets/sounds/';
+// top, then clockwise
+const PINGS = [
+  { id: 'danger',      name: 'Danger',        icon: 'pingwheel_retreatrender', art: ['pingwheel_retreatrender'],       snd: 'SRP_12',       c: '#ff3b55' },
+  { id: 'push',        name: 'Push',          icon: 'push',               art: ['pingwheel_pushrender'],          snd: 'SRP_9',        c: '#35d27a' },
+  { id: 'omw',         name: 'On My Way',     icon: 'omw',                art: ['omw'],             snd: 'OnMyWay',      c: '#2e8bff' },
+  { id: 'allin',       name: 'All In',        icon: 'all_in',             art: ['pingwheel_allin_render_01', 'pingwheel_allin_render_02'], snd: 'SRP_4', c: '#f2b320' },
+  { id: 'assist',      name: 'Assist Me',     icon: 'assist_me',          art: ['assist_me'],                     snd: 'ComeHere',     c: '#56d43c' },
+  { id: 'needvision',  name: 'Need Vision',   icon: 'need_vision',        art: ['need_vision'],                   snd: 'SRP_7',        c: '#56d43c' },
+  { id: 'missing',     name: 'Enemy Missing', icon: 'enemy_missing',      art: ['enemy_missing'],                 snd: 'MIA',          c: '#f2c518' },
+  { id: 'enemyvision', name: 'Enemy Vision',  icon: 'enemy_vision',       art: ['pingwheel_enemyvisionrender'],   snd: 'AreaIsWarded', c: '#ff3b55' },
+];
+const GENERIC = { id: 'generic', name: 'Generic', icon: 'generic_ping', art: ['pingwheel_basicpingrender'], snd: 'Base', c: '#2e8bff' };
+
+const R_IN = 86, R_OUT = 188, R_EXT = 288, R_ICON = 137, DRAG_PX = 8;
+const svg = document.getElementById('wheel'), NS = 'http://www.w3.org/2000/svg';
+const el = (tag, attrs, parent = svg) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent.appendChild(e); return e; };
+const pt = (r, deg) => [r * Math.cos(deg * Math.PI / 180), r * Math.sin(deg * Math.PI / 180)];
+const sector = (r0, r1, a0, a1) => { const [x0,y0]=pt(r0,a0),[x1,y1]=pt(r1,a0),[x2,y2]=pt(r1,a1),[x3,y3]=pt(r0,a1);
+  return `M${x0},${y0} L${x1},${y1} A${r1},${r1} 0 0 1 ${x2},${y2} L${x3},${y3} A${r0},${r0} 0 0 0 ${x0},${y0}Z`; };
+
+// ---- build wheel ----
+const defs = el('defs', {});
+defs.innerHTML = `
+  <radialGradient id="ext" cx="0" cy="0" r="${R_EXT}" gradientUnits="userSpaceOnUse">
+    <stop offset="${R_OUT / R_EXT}" stop-color="#5c6066" stop-opacity=".55"/><stop offset="1" stop-color="#5c6066" stop-opacity="0"/></radialGradient>
+  <radialGradient id="ring" cx="0" cy="0" r="${R_OUT}" gradientUnits="userSpaceOnUse">
+    <stop offset="${R_IN / R_OUT}" stop-color="#2a2d31"/><stop offset="1" stop-color="#4a4e54"/></radialGradient>
+  <radialGradient id="hot" cx="0" cy="0" r="${R_EXT}" gradientUnits="userSpaceOnUse">
+    <stop offset="${R_IN / R_EXT}" stop-color="#8a8f96"/><stop offset="${R_OUT / R_EXT}" stop-color="#9aa0a8"/><stop offset="1" stop-color="#9aa0a8" stop-opacity="0"/></radialGradient>
+  <radialGradient id="core" cx="0" cy="-10" r="${R_IN}" gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color="#2c5d60"/><stop offset="1" stop-color="#11292c"/></radialGradient>`;
+const wedges = [], icons = [];
+PINGS.forEach((p, i) => {
+  const mid = -90 + i * 45, a0 = mid - 22.5, a1 = mid + 22.5, cardinal = i % 2 === 0;
+  if (cardinal) el('path', { d: sector(R_OUT, R_EXT, a0, a1), fill: 'url(#ext)' });
+  wedges.push(el('path', { d: sector(R_IN, cardinal ? R_EXT : R_OUT, a0, a1), fill: 'url(#hot)', 'fill-opacity': 0, class: 'wedge' }));
+});
+el('circle', { r: (R_IN + R_OUT) / 2, fill: 'none', stroke: 'url(#ring)', 'stroke-width': R_OUT - R_IN, opacity: .92 });
+PINGS.forEach((p, i) => {
+  const mid = -90 + i * 45, [x0, y0] = pt(R_IN, mid - 22.5), [x1, y1] = pt(R_OUT, mid - 22.5);
+  el('line', { x1: x0, y1: y0, x2: x1, y2: y1, stroke: '#a08a5c', 'stroke-opacity': .45, 'stroke-width': 1.2 });
+  const [ix, iy] = pt(R_ICON, mid);
+  icons.push(el('image', { href: T + p.icon + '.png', x: ix - 24, y: iy - 24, width: 48, height: 48, class: 'icon' }));
+});
+// wedges were appended before the ring; move them above it so the highlight shows
+wedges.forEach(w => svg.appendChild(w)); icons.forEach(i => svg.appendChild(i));
+el('circle', { r: R_IN + 4, fill: 'none', stroke: '#1a1a1a', 'stroke-width': 6, opacity: .6 });
+el('circle', { r: R_IN, fill: 'url(#core)', stroke: 'var(--gold)', 'stroke-width': 3 });
+el('circle', { r: R_IN - 7, fill: 'none', stroke: 'var(--gold-dim)', 'stroke-width': 1, opacity: .6 });
+el('image', { href: T + 'generic_ping.png', x: -20, y: -58, width: 40, height: 40 });
+el('text', { x: 0, y: 6, 'text-anchor': 'middle', class: 'centerTxt' }).textContent = 'PING';
+el('text', { x: 6, y: 50, 'text-anchor': 'middle', class: 'backTxt' }).textContent = 'BACK';
+const mouse = el('g', { opacity: .55, transform: 'translate(-26,40)' });
+el('rect', { x: 0, y: 0, width: 11, height: 16, rx: 5.5, fill: 'none', stroke: '#6c7a7c', 'stroke-width': 1.3 }, mouse);
+el('path', { d: 'M5.5,0 V7 H11 V5.5 A5.5,5.5 0 0 0 5.5,0Z', fill: '#6c7a7c' }, mouse);
+
+// ---- audio: pre-decoded Web Audio buffers (HTMLAudio per play added load/decode latency) ----
+const ctx = new AudioContext({ latencyHint: 'interactive' });
+const buffers = {};
+for (const n of [...PINGS, GENERIC].map(p => p.snd).concat('button'))
+  fetch(S + n + '.wav').then(r => r.arrayBuffer()).then(b => ctx.decodeAudioData(b)).then(buf => buffers[n] = buf);
+addEventListener('pointerdown', () => ctx.state !== 'running' && ctx.resume(), { capture: true });
+function play(name, vol = .7) {
+  const buf = buffers[name]; if (!buf) return;
+  const src = ctx.createBufferSource(), g = ctx.createGain();
+  src.buffer = buf; g.gain.value = vol; src.connect(g).connect(ctx.destination); src.start();
+}
+
+// ---- ping spawn ----
+function spawn(p, x, y) {
+  const d = document.createElement('div'); d.className = 'ping'; d.style.left = x + 'px'; d.style.top = y + 'px'; d.style.setProperty('--c', p.c);
+  const allIn = p.art.length === 2;
+  d.innerHTML = `<div class="ground"></div><div class="ring"></div><div class="ring r2"></div><div class="ring r3"></div>
+    <div class="art">${allIn
+      ? `<div class="clash" style="position:absolute;inset:0"><img class="a1" src="${T + p.art[0]}.png"><img class="a2" src="${T + p.art[1]}.png"></div><div class="flash"></div>`
+      : `<div class="pop" style="position:absolute;inset:0"><img src="${T + p.art[0]}.png"></div>`}</div>`;
+  document.body.appendChild(d); play(p.snd);
+  setTimeout(() => d.remove(), 3300);
+}
+
+// ---- input ----
+let down = null, open = false, hot = -1;
+function setHot(i) {
+  if (i === hot) return;
+  if (hot >= 0) { wedges[hot].setAttribute('fill-opacity', 0); icons[hot].classList.remove('hot'); }
+  hot = i;
+  if (hot >= 0) { wedges[hot].setAttribute('fill-opacity', .55); icons[hot].classList.add('hot'); play('button', .35); }
+}
+function pick(x, y) {
+  const dx = x - down.x, dy = y - down.y;
+  if (Math.hypot(dx, dy) < R_IN) return -1;
+  const deg = (Math.atan2(dy, dx) * 180 / Math.PI + 90 + 22.5 + 360) % 360;
+  return Math.floor(deg / 45);
+}
+function closeWheel() { open = false; svg.classList.remove('open'); setHot(-1); down = null; }
+addEventListener('contextmenu', e => e.preventDefault());
+addEventListener('pointerdown', e => {
+  if (e.target.closest?.('.help')) return;
+  if (e.button === 2) { if (open) closeWheel(); return; }
+  down = { x: e.clientX, y: e.clientY };
+});
+addEventListener('pointermove', e => {
+  if (!down) return;
+  if (!open && Math.hypot(e.clientX - down.x, e.clientY - down.y) > DRAG_PX) {
+    open = true; svg.style.left = down.x + 'px'; svg.style.top = down.y + 'px'; svg.classList.add('open');
+  }
+  if (open) setHot(pick(e.clientX, e.clientY));
+});
+addEventListener('pointerup', e => {
+  if (!down || e.button !== 0) return;
+  if (!open) spawn(GENERIC, down.x, down.y);
+  else if (hot >= 0) spawn(PINGS[hot], down.x, down.y);
+  closeWheel();
+});
+addEventListener('keydown', e => { if (e.key === 'Escape' && open) closeWheel(); });
+
+// ---- quick test buttons ----
+const btns = document.getElementById('btns');
+[...PINGS, GENERIC].forEach(p => {
+  const b = document.createElement('button'); b.textContent = p.name;
+  b.onclick = () => spawn(p, innerWidth * .3 + Math.random() * innerWidth * .2, innerHeight * .35 + Math.random() * innerHeight * .25);
+  btns.appendChild(b);
+});
+</script>
+</body>
+</html>
